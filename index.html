@@ -589,6 +589,9 @@
   <div style="margin-top:0.5rem;color:#3a486a;">
     Try: <span style="color:var(--accent)">↑ ↑ ↓ ↓ ← → ← → B A</span> &nbsp;·&nbsp; you know what it does.
   </div>
+  <div id="mobile-konami-hint" style="margin-top:0.3rem;color:#3a486a;font-size:0.62rem;letter-spacing:2px;transition:opacity 0.3s;display:none;">
+    📱 mobile: swipe ↑↑↓↓←→←→ then tap tap
+  </div>
   <div style="margin-top:1rem;">
     <a href="https://github.com/The-Lazy-Dragon" class="clickable">GitHub</a> &nbsp;·&nbsp;
     <a href="https://reddit.com/u/Red_DevilAS07" class="clickable">Reddit</a> &nbsp;·&nbsp;
@@ -740,6 +743,12 @@ function type() {
 }
 setTimeout(type, 2000);
 
+// show mobile konami hint only on touch devices
+if ('ontouchstart' in window) {
+  const mh = document.getElementById('mobile-konami-hint');
+  if (mh) mh.style.display = 'block';
+}
+
 // ── SCROLL REVEAL ────────────────────────────────────────────────────
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);} });
@@ -828,6 +837,7 @@ function toggleKonami() {
   }
 }
 
+// ── KONAMI — KEYBOARD ────────────────────────────────────────────────
 const KONAMI=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
 let kseq=[];
 document.addEventListener('keydown', e => {
@@ -835,6 +845,55 @@ document.addEventListener('keydown', e => {
   if (kseq.length > KONAMI.length) kseq.shift();
   if (JSON.stringify(kseq)===JSON.stringify(KONAMI)) toggleKonami();
 });
+
+// ── KONAMI — MOBILE SWIPE ────────────────────────────────────────────
+// Sequence: ↑ ↑ ↓ ↓ ← → ← → tap tap
+const KONAMI_TOUCH = ['up','up','down','down','left','right','left','right','tap','tap'];
+let tseq = [];
+let touchStartX = 0, touchStartY = 0;
+let lastTap = 0;
+
+function pushTouch(dir) {
+  tseq.push(dir);
+  if (tseq.length > KONAMI_TOUCH.length) tseq.shift();
+  // flash the hint briefly so user knows input registered
+  const hint = document.getElementById('mobile-konami-hint');
+  if (hint) {
+    hint.style.opacity = '1';
+    clearTimeout(hint._t);
+    hint._t = setTimeout(() => { hint.style.opacity = ''; }, 600);
+  }
+  if (JSON.stringify(tseq) === JSON.stringify(KONAMI_TOUCH)) {
+    tseq = [];
+    toggleKonami();
+  }
+}
+
+document.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const absDx = Math.abs(dx), absDy = Math.abs(dy);
+  const minSwipe = 40; // px threshold
+
+  if (absDx < minSwipe && absDy < minSwipe) {
+    // it's a tap, not a swipe
+    const now = Date.now();
+    // only count taps when we're at the tap stage (last 2 in sequence)
+    // or always push tap — sequence matching handles correctness
+    pushTouch('tap');
+  } else if (absDy > absDx) {
+    // vertical swipe
+    pushTouch(dy < 0 ? 'up' : 'down');
+  } else {
+    // horizontal swipe
+    pushTouch(dx < 0 ? 'left' : 'right');
+  }
+}, { passive: true });
 
 // ── SECRET DRAGON ────────────────────────────────────────────────────
 function triggerDragon() {
