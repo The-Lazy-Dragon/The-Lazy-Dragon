@@ -114,11 +114,9 @@ build_time: 3AM – 4AM (prime hours, honestly)
 
 <div align="center">
 
-<img src="https://github-readme-stats.vercel.app/api?username=The-Lazy-Dragon&show_icons=true&theme=radical&bg_color=182433&title_color=00fff7&icon_color=ff153f&text_color=c8e6f0&border_color=3a486a&hide_border=false&count_private=true" alt="GitHub Stats" />
-
-<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=The-Lazy-Dragon&layout=compact&theme=radical&bg_color=182433&title_color=00fff7&text_color=c8e6f0&border_color=3a486a" alt="Top Languages" />
-
 <img src="https://streak-stats.demolab.com?user=The-Lazy-Dragon&theme=radical&background=182433&ring=00fff7&fire=ff153f&currStreakLabel=00fff7&border=3a486a&stroke=3a486a&sideLabels=c8e6f0&dates=c8e6f0&currStreakNum=ffffff&sideNums=ffffff" alt="GitHub Streak" />
+
+[![GitHub Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=The-Lazy-Dragon&bg_color=182433&color=00fff7&line=ff153f&point=ffffff&area=true&hide_border=false&area_color=3a486a)](https://github.com/The-Lazy-Dragon)
 
 </div>
 
@@ -141,8 +139,37 @@ build_time: 3AM – 4AM (prime hours, honestly)
 [![GitHub](https://img.shields.io/badge/GitHub-The--Lazy--Dragon-182433?style=flat-square&logo=github&logoColor=00fff7)](https://github.com/The-Lazy-Dragon)
 [![Discord](https://img.shields.io/badge/Discord-this.isnt.craig__-182433?style=flat-square&logo=discord&logoColor=00fff7)](https://discord.com/users/763960357214486568)
 [![Reddit](https://img.shields.io/badge/Reddit-u%2FRed__DevilAS07-182433?style=flat-square&logo=reddit&logoColor=ff153f)](https://reddit.com/u/Red_DevilAS07)
+[![Spotify](https://img.shields.io/badge/Spotify-The%20Lazy%20Dragon-182433?style=flat-square&logo=spotify&logoColor=1DB954)](https://open.spotify.com/user/31lom3w2pbow54uirczkccez6pxm)
 
 </div>
+
+---
+
+## 🎮 Currently Playing / Gaming IDs
+
+> *Avid and casual. Sometimes both at once. Usually losing.*
+
+### 📱 Mobile Legends: Bang Bang
+
+| | Main | Old (Retired) |
+|---|---|---|
+| **IGN** | 怠竜Taeryū | 龍神 RyŪjin |
+| **ID** | `1680765500 (18127)` | `1992586716 (19366)` |
+| **Server** | PH / East | Nepal / East |
+| **Rank** | Mythic ⭐50 (Peak ⭐52) | Epic |
+| **Role** | Roam Main 🛡️ | — |
+| **Note** | Main account | 95.2% Alucard WR. Yes really. |
+
+*Casual enough to feed. Good enough to carry. Roam diff.*
+
+---
+
+### ⚔️ Supercell (Clash Royale)
+
+| Field | Info |
+|---|---|
+| **Supercell ID** | `RedDragonZx` |
+| **Clan** | TheLazyDragon |
 
 ---
 
