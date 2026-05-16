@@ -4,692 +4,353 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>怠竜 Tearyū · The Lazy Dragon</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #182433;
-      --panel: #1e2e42;
+      --bg:     #182433;
+      --panel:  #1e2e42;
       --panel2: #162030;
       --accent: #00fff7;
       --danger: #ff153f;
-      --crimson: #712637;
-      --mid: #3a486a;
-      --text: #c8e6f0;
-      --dim: #7a9ab0;
-      --glow: 0 0 10px #00fff7, 0 0 30px #00fff740;
+      --crimson:#712637;
+      --mid:    #3a486a;
+      --text:   #c8e6f0;
+      --dim:    #7a9ab0;
+      --glow:     0 0 10px #00fff7, 0 0 30px #00fff740;
       --glow-red: 0 0 10px #ff153f, 0 0 30px #ff153f40;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Share Tech Mono', monospace;
-      overflow-x: hidden;
-      cursor: none;
+      background:var(--bg); color:var(--text);
+      font-family:'Share Tech Mono',monospace;
+      overflow-x:hidden; cursor:none;
+      transition:background 0.5s, color 0.5s;
     }
 
-    /* CUSTOM CURSOR */
+    /* ── LOADING ── */
+    #loading {
+      position:fixed; inset:0; background:var(--bg);
+      z-index:99999; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:1.5rem;
+      transition:opacity 0.7s;
+    }
+    #loading.fade-out { opacity:0; pointer-events:none; }
+    #load-symbol {
+      font-size:96px; color:var(--accent); text-shadow:var(--glow);
+      animation:loadPulse 1.2s ease-in-out infinite;
+      line-height:1; user-select:none;
+    }
+    #load-text { font-size:0.7rem; letter-spacing:5px; color:var(--dim); text-transform:uppercase; animation:loadBlink 1.2s ease-in-out infinite; }
+    @keyframes loadPulse { 0%,100%{opacity:1;transform:scale(1);text-shadow:0 0 10px var(--accent),0 0 40px var(--accent)} 50%{opacity:0.15;transform:scale(0.75);text-shadow:none} }
+    @keyframes loadBlink { 0%,100%{opacity:0.8} 50%{opacity:0.15} }
+
+    /* ── CURSOR ── */
     #cursor {
-      position: fixed;
-      width: 12px; height: 12px;
-      background: var(--accent);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      box-shadow: var(--glow);
-      transition: transform 0.1s, background 0.2s;
+      position:fixed; top:0; left:0; pointer-events:none; z-index:99998;
+      transform:translate(-50%,-50%); font-size:30px; line-height:1;
+      color:var(--accent); text-shadow:var(--glow); user-select:none;
+      transition:color 0.15s, text-shadow 0.15s, font-size 0.15s;
+      will-change:transform;
     }
-    #cursor.clicking { transform: translate(-50%,-50%) scale(0.6); }
+    #cursor.hovering { font-size:34px; color:var(--danger); text-shadow:var(--glow-red); }
+    #cursor.clicking { font-size:22px; }
 
-    /* TRAIL CANVAS */
-    #trail-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 9998;
-    }
+    #trail-canvas { position:fixed; inset:0; pointer-events:none; z-index:99997; }
 
-    /* SCANLINES */
+    /* ── SCANLINES ── */
     body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.03) 2px,
-        rgba(0,0,0,0.03) 4px
-      );
-      pointer-events: none;
-      z-index: 9000;
+      content:''; position:fixed; inset:0;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+      pointer-events:none; z-index:9000;
     }
 
-    /* MATRIX CANVAS (Konami) */
-    #matrix-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 8999;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-    #matrix-canvas.active { opacity: 0.18; }
+    /* ── MATRIX ── */
+    #matrix-canvas { position:fixed; inset:0; pointer-events:none; z-index:8999; opacity:0; transition:opacity 0.6s; }
+    #matrix-canvas.active { opacity:0.22; }
 
-    /* KONAMI BANNER */
+    /* ── KONAMI BANNER — pushes nav down ── */
     #konami-banner {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      background: #00fff710;
-      border-bottom: 1px solid var(--accent);
-      color: var(--accent);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.75rem;
-      text-align: center;
-      padding: 6px;
-      z-index: 9997;
-      transform: translateY(-100%);
-      transition: transform 0.4s;
+      position:fixed; top:0; left:0; right:0;
+      height:0; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.72rem; letter-spacing:3px;
+      color:var(--accent); background:rgba(0,0,0,0.85);
+      border-bottom:0px solid var(--accent);
+      z-index:9997;
+      transition:height 0.4s ease, border-bottom-width 0.4s ease;
+      white-space:nowrap;
     }
-    #konami-banner.active { transform: translateY(0); }
+    #konami-banner.active {
+      height:36px;
+      border-bottom-width:1px;
+    }
 
-    /* NAV */
+    /* nav shifts down when banner is open */
     nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 3rem;
-      background: linear-gradient(to bottom, var(--bg) 60%, transparent);
-      border-bottom: 1px solid #ffffff08;
+      position:fixed; left:0; right:0; top:0;
+      z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 3rem;
+      background:linear-gradient(to bottom,var(--bg) 60%,transparent);
+      border-bottom:1px solid #ffffff08;
+      transition:top 0.4s ease, background 0.5s;
     }
+    nav.banner-open { top:36px; }
+
+    /* ── RAIN MODE TOGGLE (top-left corner) ── */
+    #rain-toggle {
+      position:fixed; top:1rem; left:1rem; z-index:9998;
+      display:none; flex-direction:column; gap:0;
+      opacity:0; transition:opacity 0.4s;
+    }
+    #rain-toggle.visible { display:flex; opacity:1; }
+    .rtbtn {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.6rem; letter-spacing:2px; text-transform:uppercase;
+      padding:0.3rem 0.7rem; cursor:none;
+      background:transparent; border:1px solid var(--accent);
+      color:var(--dim); transition:all 0.2s;
+    }
+    .rtbtn:first-child { border-bottom:none; }
+    .rtbtn.active { background:var(--accent); color:var(--bg); }
+
+    /* ── GREEN KONAMI MODE ── */
+    body.konami {
+      --accent:#00ff41; --glow:0 0 10px #00ff41,0 0 30px #00ff4160;
+      --text:#b0ffb0; --dim:#55aa55; --mid:#1a4a1a;
+      --panel:#0a1a0a; --panel2:#060e06; --bg:#030f03;
+    }
+
+    /* ── NAV ── */
     .nav-logo {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-shadow: var(--glow);
-      text-decoration: none;
-      letter-spacing: 2px;
+      font-family:'Orbitron',sans-serif; font-size:0.9rem; font-weight:700;
+      color:var(--accent); text-shadow:var(--glow); text-decoration:none; letter-spacing:2px;
     }
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
     .nav-links a {
-      color: var(--dim);
-      text-decoration: none;
-      font-size: 0.75rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      transition: color 0.2s;
-      position: relative;
+      color:var(--dim); text-decoration:none; font-size:0.75rem;
+      letter-spacing:2px; text-transform:uppercase; transition:color 0.2s; position:relative;
     }
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -4px; left: 0;
-      width: 0; height: 1px;
-      background: var(--accent);
-      transition: width 0.3s;
-    }
-    .nav-links a:hover { color: var(--accent); }
-    .nav-links a:hover::after { width: 100%; }
+    .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px; background:var(--accent); transition:width 0.3s; }
+    .nav-links a:hover { color:var(--accent); }
+    .nav-links a:hover::after { width:100%; }
 
-    /* SECTIONS */
-    section { padding: 6rem 3rem; max-width: 1100px; margin: 0 auto; }
-
-    /* ===== HERO ===== */
+    /* ── HERO ── */
+    section { padding:6rem 3rem; max-width:1100px; margin:0 auto; }
     #hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 0 3rem;
-      max-width: 100%;
-      position: relative;
-      overflow: hidden;
+      min-height:100vh; display:flex; flex-direction:column;
+      justify-content:center; align-items:flex-start;
+      padding:0 3rem; max-width:100%; position:relative; overflow:hidden;
     }
-
     .hero-bg-grid {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,255,247,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,247,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+      position:absolute; inset:0;
+      background-image:linear-gradient(rgba(0,255,247,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,247,0.03) 1px,transparent 1px);
+      background-size:60px 60px;
+      mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
     }
+    .hero-tag { font-size:0.7rem; letter-spacing:4px; color:var(--accent); text-transform:uppercase; margin-bottom:1.5rem; opacity:0; animation:fadeUp 0.6s 0.3s forwards; }
+    .hero-name { font-family:'Orbitron',sans-serif; font-size:clamp(2.5rem,8vw,7rem); font-weight:900; line-height:0.95; color:var(--text); margin-bottom:0.5rem; opacity:0; animation:fadeUp 0.6s 0.5s forwards; }
+    .hero-name .kanji { display:block; font-size:clamp(1.2rem,4vw,3.5rem); color:var(--accent); text-shadow:var(--glow); letter-spacing:6px; margin-bottom:0.3rem; }
+    .glitch { position:relative; display:inline-block; }
+    .glitch::before,.glitch::after { content:attr(data-text); position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; }
+    .glitch:hover::before { animation:glitch1 0.3s steps(2) forwards; color:var(--danger); clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%); opacity:1; }
+    .glitch:hover::after  { animation:glitch2 0.3s steps(2) 0.05s forwards; color:var(--accent); clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%); opacity:1; }
+    @keyframes glitch1 { 0%{transform:translate(-3px,0)} 50%{transform:translate(3px,0)} 100%{transform:translate(0,0)} }
+    @keyframes glitch2 { 0%{transform:translate(3px,0)} 50%{transform:translate(-3px,0)} 100%{transform:translate(0,0)} }
 
-    .hero-tag {
-      font-size: 0.7rem;
-      letter-spacing: 4px;
-      color: var(--accent);
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      animation: fadeUp 0.6s 0.2s forwards;
-    }
-
-    .hero-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(2.5rem, 8vw, 7rem);
-      font-weight: 900;
-      line-height: 0.95;
-      color: var(--text);
-      margin-bottom: 0.5rem;
-      opacity: 0;
-      animation: fadeUp 0.6s 0.4s forwards;
-      position: relative;
-    }
-    .hero-name .kanji {
-      display: block;
-      font-size: clamp(1.2rem, 4vw, 3.5rem);
-      color: var(--accent);
-      text-shadow: var(--glow);
-      letter-spacing: 6px;
-      margin-bottom: 0.3rem;
-    }
-
-    .glitch {
-      position: relative;
-      display: inline-block;
-    }
-    .glitch::before, .glitch::after {
-      content: attr(data-text);
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      opacity: 0;
-    }
-    .glitch:hover::before {
-      animation: glitch1 0.3s steps(2) forwards;
-      color: var(--danger);
-      clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
-      opacity: 1;
-    }
-    .glitch:hover::after {
-      animation: glitch2 0.3s steps(2) 0.05s forwards;
-      color: var(--accent);
-      clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
-      opacity: 1;
-    }
-
-    @keyframes glitch1 {
-      0%   { transform: translate(-3px, 0); }
-      50%  { transform: translate(3px, 0); }
-      100% { transform: translate(0, 0); }
-    }
-    @keyframes glitch2 {
-      0%   { transform: translate(3px, 0); }
-      50%  { transform: translate(-3px, 0); }
-      100% { transform: translate(0, 0); }
-    }
-
-    .hero-subtitle {
-      font-size: clamp(0.8rem, 2vw, 1.1rem);
-      color: var(--dim);
-      margin-top: 1.5rem;
-      min-height: 1.5em;
-      opacity: 0;
-      animation: fadeUp 0.6s 0.8s forwards;
-    }
-    .hero-subtitle .cursor-blink {
-      display: inline-block;
-      width: 2px; height: 1em;
-      background: var(--accent);
-      margin-left: 3px;
-      vertical-align: text-bottom;
-      animation: blink 1s infinite;
-    }
-
-    .hero-cta {
-      display: flex;
-      gap: 1rem;
-      margin-top: 2.5rem;
-      opacity: 0;
-      animation: fadeUp 0.6s 1s forwards;
-      flex-wrap: wrap;
-    }
+    .hero-subtitle { font-size:clamp(0.8rem,2vw,1.1rem); color:var(--dim); margin-top:1.5rem; min-height:1.5em; opacity:0; animation:fadeUp 0.6s 0.9s forwards; }
+    .cursor-blink { display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:3px; vertical-align:text-bottom; animation:blink 1s infinite; }
+    .hero-cta { display:flex; gap:1rem; margin-top:2.5rem; flex-wrap:wrap; opacity:0; animation:fadeUp 0.6s 1.1s forwards; }
     .btn {
-      display: inline-block;
-      padding: 0.7rem 1.8rem;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      text-decoration: none;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      background: transparent;
-      cursor: none;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
+      display:inline-block; padding:0.7rem 1.8rem;
+      font-family:'Share Tech Mono',monospace; font-size:0.75rem;
+      letter-spacing:2px; text-transform:uppercase; text-decoration:none;
+      border:1px solid var(--accent); color:var(--accent);
+      background:transparent; cursor:none; transition:all 0.2s;
+      position:relative; overflow:hidden;
     }
-    .btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--accent);
-      transform: translateX(-101%);
-      transition: transform 0.25s;
-      z-index: -1;
-    }
-    .btn:hover { color: var(--bg); text-shadow: none; }
-    .btn:hover::before { transform: translateX(0); }
-    .btn.danger { border-color: var(--danger); color: var(--danger); }
-    .btn.danger::before { background: var(--danger); }
+    .btn::before { content:''; position:absolute; inset:0; background:var(--accent); transform:translateX(-101%); transition:transform 0.25s; z-index:-1; }
+    .btn:hover { color:var(--bg); }
+    .btn:hover::before { transform:translateX(0); }
+    .btn.danger { border-color:var(--danger); color:var(--danger); }
+    .btn.danger::before { background:var(--danger); }
+    .btn.danger:hover { color:#fff; }
 
-    .hero-scroll {
-      position: absolute;
-      bottom: 2rem; left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--dim);
-      font-size: 0.65rem;
-      letter-spacing: 3px;
-      opacity: 0;
-      animation: fadeUp 0.6s 1.4s forwards;
-    }
-    .scroll-line {
-      width: 1px; height: 40px;
-      background: linear-gradient(to bottom, var(--accent), transparent);
-      animation: scrollPulse 2s infinite;
-    }
+    .hero-scroll { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:0.5rem; color:var(--dim); font-size:0.65rem; letter-spacing:3px; opacity:0; animation:fadeUp 0.6s 1.5s forwards; }
+    .scroll-line { width:1px; height:40px; background:linear-gradient(to bottom,var(--accent),transparent); animation:scrollPulse 2s infinite; }
 
-    /* ===== SECTION HEADERS ===== */
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 3rem;
+    /* ── SECRET FEATURE ── */
+    #secret-orb {
+      position:fixed; bottom:2rem; right:2rem; z-index:500;
+      width:48px; height:48px; border-radius:50%;
+      border:1px solid var(--accent); background:transparent;
+      cursor:none; transition:all 0.3s;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 0 0 0 var(--accent);
+      animation:orbPulse 3s infinite;
     }
-    .section-num {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--accent);
-      letter-spacing: 2px;
+    #secret-orb:hover { background:#00fff720; box-shadow:var(--glow); transform:scale(1.15); }
+    #secret-orb .orb-symbol { font-size:18px; color:var(--accent); pointer-events:none; }
+    #secret-orb .orb-hint {
+      position:absolute; right:56px; bottom:50%; transform:translateY(50%);
+      font-size:0.6rem; letter-spacing:2px; color:var(--dim);
+      white-space:nowrap; opacity:0; transition:opacity 0.3s;
+      pointer-events:none;
     }
-    .section-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(1.2rem, 3vw, 2rem);
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
-    .section-line {
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(to right, var(--mid), transparent);
-    }
+    #secret-orb:hover .orb-hint { opacity:1; }
+    @keyframes orbPulse { 0%,100%{box-shadow:0 0 0 0 #00fff740} 50%{box-shadow:0 0 0 8px #00fff710} }
 
-    /* ===== ABOUT ===== */
-    .terminal {
-      background: var(--panel2);
-      border: 1px solid var(--mid);
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 4px 40px #00000050;
+    /* Dragon mode overlay */
+    #dragon-overlay {
+      position:fixed; inset:0; z-index:9990;
+      background:#000; opacity:0; pointer-events:none;
+      display:flex; align-items:center; justify-content:center;
+      flex-direction:column; gap:1rem; transition:opacity 0.4s;
     }
-    .terminal-bar {
-      background: var(--panel);
-      padding: 0.6rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      border-bottom: 1px solid var(--mid);
+    #dragon-overlay.active { opacity:1; pointer-events:all; }
+    #dragon-overlay .dragon-text {
+      font-family:'Orbitron',sans-serif; font-size:clamp(2rem,6vw,5rem);
+      font-weight:900; color:#ff153f; text-shadow:var(--glow-red);
+      text-align:center; letter-spacing:4px;
+      animation:dragonFlicker 0.15s infinite;
     }
-    .t-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-    }
-    .t-dot.red   { background: #ff5f57; }
-    .t-dot.yellow{ background: #febc2e; }
-    .t-dot.green { background: #28c840; }
-    .terminal-title {
-      margin-left: auto;
-      font-size: 0.65rem;
-      color: var(--dim);
-      letter-spacing: 1px;
-    }
-    .terminal-body {
-      padding: 1.5rem;
-      font-size: 0.85rem;
-      line-height: 1.9;
-    }
-    .t-prompt { color: var(--accent); }
-    .t-cmd { color: var(--text); }
-    .t-comment { color: var(--mid); }
-    .t-key { color: var(--danger); }
-    .t-val { color: #b5e853; }
-    .t-str { color: #e8b85b; }
-    .t-block { margin: 0.5rem 0 0.5rem 1rem; }
-    .t-line { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    #dragon-overlay .dragon-sub { font-size:0.75rem; color:#ff153f80; letter-spacing:4px; }
+    #dragon-overlay .dragon-close { margin-top:2rem; font-size:0.7rem; letter-spacing:3px; color:#ff153f60; cursor:none; border:1px solid #ff153f40; padding:0.5rem 1.5rem; transition:all 0.2s; }
+    #dragon-overlay .dragon-close:hover { color:#ff153f; border-color:#ff153f; }
+    @keyframes dragonFlicker { 0%,100%{opacity:1} 50%{opacity:0.85} }
 
-    /* ===== PROJECTS ===== */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-    .project-card {
-      background: var(--panel2);
-      border: 1px solid var(--mid);
-      padding: 1.8rem;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.3s, transform 0.3s;
-      group: '';
-    }
-    .project-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 3px; height: 100%;
-      background: var(--accent);
-      transform: scaleY(0);
-      transform-origin: top;
-      transition: transform 0.3s;
-    }
-    .project-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-4px);
-      box-shadow: 0 8px 30px #00fff715;
-    }
-    .project-card:hover::before { transform: scaleY(1); }
+    /* ── SECTION HEADER ── */
+    .section-header { display:flex; align-items:center; gap:1rem; margin-bottom:3rem; }
+    .section-num { font-size:0.7rem; color:var(--accent); letter-spacing:2px; }
+    .section-title { font-family:'Orbitron',sans-serif; font-size:clamp(1.2rem,3vw,2rem); font-weight:700; color:var(--text); letter-spacing:3px; text-transform:uppercase; }
+    .section-line { flex:1; height:1px; background:linear-gradient(to right,var(--mid),transparent); }
 
-    .project-card.red-accent::before { background: var(--danger); }
-    .project-card.red-accent:hover {
-      border-color: var(--danger);
-      box-shadow: 0 8px 30px #ff153f15;
-    }
+    /* ── TERMINAL ── */
+    .terminal { background:var(--panel2); border:1px solid var(--mid); border-radius:4px; overflow:hidden; box-shadow:0 4px 40px #00000050; }
+    .terminal-bar { background:var(--panel); padding:0.6rem 1rem; display:flex; align-items:center; gap:0.5rem; border-bottom:1px solid var(--mid); }
+    .t-dot { width:10px; height:10px; border-radius:50%; }
+    .t-dot.red{background:#ff5f57} .t-dot.yellow{background:#febc2e} .t-dot.green{background:#28c840}
+    .terminal-title { margin-left:auto; font-size:0.65rem; color:var(--dim); letter-spacing:1px; }
+    .terminal-body { padding:1.5rem; font-size:0.85rem; line-height:1.9; }
+    .t-prompt{color:var(--accent)} .t-comment{color:var(--mid)} .t-key{color:var(--danger)} .t-val{color:#b5e853} .t-str{color:#e8b85b}
+    .t-block{margin:0.5rem 0 0.5rem 1rem} .t-line{display:flex;gap:0.5rem;flex-wrap:wrap}
 
-    .project-icon {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-    }
-    .project-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 0.3rem;
-      letter-spacing: 1px;
-    }
-    .project-version {
-      font-size: 0.65rem;
-      color: var(--accent);
-      letter-spacing: 2px;
-    }
-    .project-desc {
-      font-size: 0.78rem;
-      color: var(--dim);
-      line-height: 1.7;
-      margin: 1rem 0;
-    }
-    .project-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 1.2rem;
-    }
-    .badge {
-      font-size: 0.6rem;
-      letter-spacing: 1px;
-      padding: 0.2rem 0.6rem;
-      border: 1px solid var(--mid);
-      color: var(--dim);
-      text-transform: uppercase;
-    }
-    .badge.cyan { border-color: var(--accent); color: var(--accent); }
-    .badge.red  { border-color: var(--danger); color: var(--danger); }
-    .project-links { display: flex; gap: 0.8rem; }
-    .proj-link {
-      font-size: 0.68rem;
-      color: var(--accent);
-      text-decoration: none;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.2s;
-    }
-    .proj-link:hover { border-color: var(--accent); }
-    .proj-link.red { color: var(--danger); }
-    .proj-link.red:hover { border-color: var(--danger); }
+    /* ── PROJECTS ── */
+    .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
+    .project-card { background:var(--panel2); border:1px solid var(--mid); padding:1.8rem; position:relative; overflow:hidden; transition:border-color 0.3s,transform 0.3s; }
+    .project-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent); transform:scaleY(0); transform-origin:top; transition:transform 0.3s; }
+    .project-card:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 8px 30px #00fff715; }
+    .project-card:hover::before { transform:scaleY(1); }
+    .project-card.red-accent::before { background:var(--danger); }
+    .project-card.red-accent:hover { border-color:var(--danger); box-shadow:0 8px 30px #ff153f15; }
+    .project-icon{font-size:1.8rem;margin-bottom:1rem}
+    .project-name{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:0.3rem;letter-spacing:1px}
+    .project-version{font-size:0.65rem;color:var(--accent);letter-spacing:2px}
+    .project-desc{font-size:0.78rem;color:var(--dim);line-height:1.7;margin:1rem 0}
+    .project-badges{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.2rem}
+    .badge{font-size:0.6rem;letter-spacing:1px;padding:0.2rem 0.6rem;border:1px solid var(--mid);color:var(--dim);text-transform:uppercase}
+    .badge.cyan{border-color:var(--accent);color:var(--accent)} .badge.red{border-color:var(--danger);color:var(--danger)}
+    .project-links{display:flex;gap:0.8rem}
+    .proj-link{font-size:0.68rem;color:var(--accent);text-decoration:none;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid transparent;transition:border-color 0.2s;cursor:none}
+    .proj-link:hover{border-color:var(--accent)} .proj-link.red{color:var(--danger)} .proj-link.red:hover{border-color:var(--danger)}
 
-    /* ===== STACK ===== */
-    .stack-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-    }
-    .stack-group { }
-    .stack-group-title {
-      font-size: 0.65rem;
-      letter-spacing: 3px;
-      color: var(--accent);
-      text-transform: uppercase;
-      margin-bottom: 0.8rem;
-      padding-bottom: 0.4rem;
-      border-bottom: 1px solid var(--mid);
-    }
-    .stack-items { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .stack-item {
-      font-size: 0.72rem;
-      padding: 0.3rem 0.8rem;
-      background: var(--panel);
-      border: 1px solid var(--mid);
-      color: var(--text);
-      letter-spacing: 1px;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .stack-item:hover { border-color: var(--accent); color: var(--accent); }
-    .stack-item.learning { border-style: dashed; color: var(--dim); }
-    .stack-item.chaotic { border-color: var(--crimson); color: #ff153f90; font-size: 0.65rem; }
+    /* ── STACK ── */
+    .stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem}
+    .stack-group-title{font-size:0.65rem;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--mid)}
+    .stack-items{display:flex;flex-wrap:wrap;gap:0.4rem}
+    .stack-item{font-size:0.72rem;padding:0.3rem 0.8rem;background:var(--panel);border:1px solid var(--mid);color:var(--text);letter-spacing:1px;transition:border-color 0.2s,color 0.2s}
+    .stack-item:hover{border-color:var(--accent);color:var(--accent)}
+    .stack-item.learning{border-style:dashed;color:var(--dim)}
+    .stack-item.chaotic{border-color:var(--crimson);color:#ff153f90;font-size:0.65rem}
 
-    /* ===== GAMING ===== */
-    .gaming-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-    .game-card {
-      background: var(--panel2);
-      border: 1px solid var(--mid);
-      padding: 1.5rem;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.3s;
-    }
-    .game-card:hover { border-color: var(--mid); }
-    .game-header {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      margin-bottom: 1.2rem;
-      padding-bottom: 0.8rem;
-      border-bottom: 1px solid var(--mid);
-    }
-    .game-icon { font-size: 1.4rem; }
-    .game-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 2px;
-    }
-    .game-subtitle { font-size: 0.65rem; color: var(--dim); margin-top: 0.15rem; }
-    .game-stat {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.35rem 0;
-      border-bottom: 1px solid #ffffff06;
-      font-size: 0.72rem;
-    }
-    .game-stat:last-child { border-bottom: none; }
-    .stat-key { color: var(--dim); }
-    .stat-val { color: var(--text); text-align: right; }
-    .stat-val.cyan { color: var(--accent); }
-    .stat-val.red  { color: var(--danger); }
-    .stat-val.gold { color: #e8b85b; }
+    /* ── GAMING ── */
+    .gaming-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+    .game-card{background:var(--panel2);border:1px solid var(--mid);padding:1.5rem;transition:border-color 0.3s}
+    .game-header{display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:0.8rem;border-bottom:1px solid var(--mid)}
+    .game-icon{font-size:1.4rem}
+    .game-title{font-family:'Orbitron',sans-serif;font-size:0.8rem;font-weight:700;color:var(--accent);letter-spacing:2px}
+    .game-subtitle{font-size:0.65rem;color:var(--dim);margin-top:0.15rem}
+    .game-stat{display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ffffff06;font-size:0.72rem}
+    .game-stat:last-child{border-bottom:none}
+    .stat-key{color:var(--dim)} .stat-val{color:var(--text);text-align:right}
+    .stat-val.cyan{color:var(--accent)} .stat-val.red{color:var(--danger)} .stat-val.gold{color:#e8b85b}
+    .mlbb-tabs{display:flex;margin-bottom:1rem}
+    .mlbb-tab{flex:1;padding:0.4rem;font-size:0.65rem;letter-spacing:1px;text-align:center;cursor:none;border:1px solid var(--mid);color:var(--dim);background:transparent;transition:all 0.2s;font-family:'Share Tech Mono',monospace}
+    .mlbb-tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+    .mlbb-panel{display:none} .mlbb-panel.active{display:block}
 
-    .mlbb-tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: 1rem;
-    }
-    .mlbb-tab {
-      flex: 1;
-      padding: 0.4rem;
-      font-size: 0.65rem;
-      letter-spacing: 1px;
-      text-align: center;
-      cursor: none;
-      border: 1px solid var(--mid);
-      color: var(--dim);
-      background: transparent;
-      transition: all 0.2s;
-      font-family: 'Share Tech Mono', monospace;
-    }
-    .mlbb-tab.active {
-      background: var(--accent);
-      color: var(--bg);
-      border-color: var(--accent);
-    }
-    .mlbb-panel { display: none; }
-    .mlbb-panel.active { display: block; }
+    /* ── CONTACT ── */
+    .socials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+    .social-card{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:var(--panel2);border:1px solid var(--mid);text-decoration:none;transition:border-color 0.2s,transform 0.2s;position:relative;overflow:hidden;cursor:none}
+    .social-card::after{content:'→';position:absolute;right:1rem;color:var(--dim);font-size:0.8rem;transition:color 0.2s,right 0.2s}
+    .social-card:hover{border-color:var(--accent);transform:translateX(4px)}
+    .social-card:hover::after{color:var(--accent);right:0.7rem}
+    .social-icon{font-size:1.2rem}
+    .social-label{font-size:0.65rem;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+    .social-handle{font-size:0.85rem;color:var(--text);margin-top:0.1rem}
 
-    /* ===== SOCIALS ===== */
-    .socials-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-    }
-    .social-card {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.2rem;
-      background: var(--panel2);
-      border: 1px solid var(--mid);
-      text-decoration: none;
-      transition: border-color 0.2s, transform 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    .social-card::after {
-      content: '→';
-      position: absolute;
-      right: 1rem;
-      color: var(--dim);
-      font-size: 0.8rem;
-      transition: color 0.2s, right 0.2s;
-    }
-    .social-card:hover { border-color: var(--accent); transform: translateX(4px); }
-    .social-card:hover::after { color: var(--accent); right: 0.7rem; }
-    .social-icon { font-size: 1.2rem; }
-    .social-label { font-size: 0.65rem; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; }
-    .social-handle { font-size: 0.85rem; color: var(--text); margin-top: 0.1rem; }
+    /* ── FOOTER ── */
+    footer{border-top:1px solid var(--mid);padding:3rem;text-align:center;font-size:0.72rem;color:var(--dim);line-height:2}
+    footer .footer-logo{font-family:'Orbitron',sans-serif;font-size:0.9rem;color:var(--accent);text-shadow:var(--glow);letter-spacing:3px;display:block;margin-bottom:0.5rem}
+    footer a{color:var(--accent);text-decoration:none}
+    footer a:hover{text-decoration:underline}
 
-    /* ===== FOOTER ===== */
-    footer {
-      border-top: 1px solid var(--mid);
-      padding: 3rem;
-      text-align: center;
-      font-size: 0.72rem;
-      color: var(--dim);
-      line-height: 2;
-    }
-    footer .footer-logo {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.9rem;
-      color: var(--accent);
-      text-shadow: var(--glow);
-      letter-spacing: 3px;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes blink   {0%,100%{opacity:1}50%{opacity:0}}
+    @keyframes scrollPulse{0%,100%{opacity:0.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.2)}}
+    .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s,transform 0.7s}
+    .reveal.visible{opacity:1;transform:translateY(0)}
 
-    /* KONAMI flash */
-    @keyframes konamiFlash {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    body.konami-active { animation: none; }
-    body.konami-active .hero-name .kanji { color: #ff153f; text-shadow: var(--glow-red); animation: konamiFlash 2s infinite; }
-
-    /* ANIMATIONS */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-    @keyframes scrollPulse {
-      0%, 100% { opacity: 0.3; transform: scaleY(1); }
-      50% { opacity: 1; transform: scaleY(1.2); }
-    }
-
-    /* REVEAL ON SCROLL */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.7s, transform 0.7s;
-    }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      nav { padding: 1rem 1.5rem; }
-      .nav-links { gap: 1rem; }
-      .nav-links a { font-size: 0.65rem; }
-      section { padding: 4rem 1.5rem; }
-      #hero { padding: 0 1.5rem; }
-      footer { padding: 2rem 1.5rem; }
-    }
-    @media (max-width: 480px) {
-      .nav-links { display: none; }
-    }
+    @media(max-width:768px){nav{padding:1rem 1.5rem}section{padding:4rem 1.5rem}#hero{padding:0 1.5rem}footer{padding:2rem 1.5rem}}
+    @media(max-width:480px){.nav-links{display:none}}
   </style>
 </head>
 <body>
 
+<!-- LOADING -->
+<div id="loading">
+  <div id="load-symbol">◌</div>
+  <div id="load-text">Initializing . . .</div>
+</div>
+
 <!-- CURSOR -->
-<div id="cursor"></div>
+<div id="cursor">◌</div>
 <canvas id="trail-canvas"></canvas>
 <canvas id="matrix-canvas"></canvas>
-<div id="konami-banner">// MATRIX PROTOCOL ACTIVATED · ↑↑↓↓←→←→BA · KONAMI MODE ENGAGED //</div>
+
+<!-- KONAMI BANNER -->
+<div id="konami-banner">// MATRIX PROTOCOL ACTIVATED &nbsp;·&nbsp; ↑↑↓↓←→←→BA &nbsp;·&nbsp; KONAMI MODE ENGAGED //</div>
+
+<!-- RAIN MODE TOGGLE (shows only when Konami active) -->
+<div id="rain-toggle">
+  <button class="rtbtn active clickable" id="btn-bin" onclick="setRainMode('binary')">01 Binary</button>
+  <button class="rtbtn clickable" id="btn-jap" onclick="setRainMode('japanese')">カナ Katakana</button>
+</div>
+
+<!-- SECRET ORB -->
+<div id="secret-orb" class="clickable" onclick="triggerDragon()">
+  <span class="orb-symbol">龍</span>
+  <span class="orb-hint">// click me</span>
+</div>
+
+<!-- DRAGON OVERLAY -->
+<div id="dragon-overlay">
+  <div class="dragon-text">怠竜 AWAKENS</div>
+  <div class="dragon-sub">// THE LAZY DRAGON HAS ENTERED THE CHAT //</div>
+  <div class="dragon-close clickable" onclick="closeDragon()">[ ESC · CLOSE ]</div>
+</div>
 
 <!-- NAV -->
-<nav>
-  <a href="#hero" class="nav-logo">怠竜</a>
+<nav id="main-nav">
+  <a href="#hero" class="nav-logo clickable">怠竜</a>
   <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#stack">Stack</a></li>
-    <li><a href="#gaming">Gaming</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#about"    class="clickable">About</a></li>
+    <li><a href="#projects" class="clickable">Projects</a></li>
+    <li><a href="#stack"    class="clickable">Stack</a></li>
+    <li><a href="#gaming"   class="clickable">Gaming</a></li>
+    <li><a href="#contact"  class="clickable">Contact</a></li>
   </ul>
 </nav>
 
@@ -705,13 +366,10 @@
     <span id="typewriter"></span><span class="cursor-blink"></span>
   </div>
   <div class="hero-cta">
-    <a href="#projects" class="btn">View Projects</a>
-    <a href="https://github.com/The-Lazy-Dragon" target="_blank" class="btn danger">GitHub ↗</a>
+    <a href="#projects" class="btn clickable">View Projects</a>
+    <a href="https://github.com/The-Lazy-Dragon" target="_blank" class="btn danger clickable">GitHub ↗</a>
   </div>
-  <div class="hero-scroll">
-    <div class="scroll-line"></div>
-    SCROLL
-  </div>
+  <div class="hero-scroll"><div class="scroll-line"></div>SCROLL</div>
 </section>
 
 <!-- ABOUT -->
@@ -723,36 +381,30 @@
   </div>
   <div class="terminal reveal">
     <div class="terminal-bar">
-      <div class="t-dot red"></div>
-      <div class="t-dot yellow"></div>
-      <div class="t-dot green"></div>
+      <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
       <span class="terminal-title">tearyu@lazyd:~$ identity.conf</span>
     </div>
     <div class="terminal-body">
-      <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd"> cat identity.yaml</span></div>
-      <br>
+      <div class="t-line"><span class="t-prompt">$</span><span> cat identity.yaml</span></div><br>
       <div class="t-block">
-        <div><span class="t-key">name</span><span class="t-comment">:</span>       <span class="t-str">"怠竜 Tearyū · The Lazy Dragon"</span></div>
-        <div><span class="t-key">location</span><span class="t-comment">:</span>   <span class="t-str">"Biratnagar, Nepal 🇳🇵"</span></div>
-        <div><span class="t-key">roots</span><span class="t-comment">:</span>      <span class="t-str">"Nepali 🇳🇵 · Filipino/Spanish/Chinese 🇵🇭"</span></div>
-        <div><span class="t-key">studying</span><span class="t-comment">:</span>   <span class="t-str">"BSc (Hons) IT @ IIC · Itahari International College"</span></div>
-        <div><span class="t-key">stack</span><span class="t-comment">:</span>      <span class="t-str">["HTML","CSS","JS","Node","React","Python"]</span></div>
-        <div><span class="t-key">exploring</span><span class="t-comment">:</span>  <span class="t-str">["Unreal Engine","Unity","Game Dev"]</span></div>
-        <div><span class="t-key">build_hours</span><span class="t-comment">:</span><span class="t-str"> "03:00 – 04:00"</span>  <span class="t-comment"># prime time</span></div>
-        <div><span class="t-key">philosophy</span><span class="t-comment">:</span> <span class="t-str">"No frameworks. No installs. One file."</span></div>
-        <div><span class="t-key">sleep</span><span class="t-comment">:</span>      <span class="t-val">false</span>  <span class="t-comment"># a suggestion, mostly ignored</span></div>
-      </div>
-      <br>
-      <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd"> echo $INTERESTS</span></div>
-      <div class="t-block"><span class="t-str">"Turn-Based RPGs · Zombie Movies · Isekai Anime · Basketball · Football · MLBB · Rimworld · Project Zomboid · Valheim"</span></div>
-      <br>
-      <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd"> cat /etc/allegiances</span></div>
+        <div><span class="t-key">name</span>:       <span class="t-str">"怠竜 Tearyū · The Lazy Dragon"</span></div>
+        <div><span class="t-key">location</span>:   <span class="t-str">"Biratnagar, Nepal 🇳🇵"</span></div>
+        <div><span class="t-key">roots</span>:      <span class="t-str">"Nepali 🇳🇵 · Filipino/Spanish/Chinese 🇵🇭"</span></div>
+        <div><span class="t-key">studying</span>:   <span class="t-str">"BSc (Hons) IT @ IIC · Itahari International College"</span></div>
+        <div><span class="t-key">stack</span>:      <span class="t-str">["HTML","CSS","JS","Node","React","Python"]</span></div>
+        <div><span class="t-key">exploring</span>:  <span class="t-str">["Unreal Engine","Unity","Game Dev"]</span></div>
+        <div><span class="t-key">build_hours</span>:<span class="t-str"> "03:00 – 04:00"</span>  <span class="t-comment"># prime time</span></div>
+        <div><span class="t-key">philosophy</span>: <span class="t-str">"No frameworks. No installs. One file."</span></div>
+        <div><span class="t-key">sleep</span>:      <span class="t-val">false</span>  <span class="t-comment"># a suggestion, mostly ignored</span></div>
+      </div><br>
+      <div class="t-line"><span class="t-prompt">$</span><span> echo $INTERESTS</span></div>
+      <div class="t-block"><span class="t-str">"Turn-Based RPGs · Zombie Movies · Isekai Anime · Basketball · Football · MLBB · Rimworld · Project Zomboid · Valheim"</span></div><br>
+      <div class="t-line"><span class="t-prompt">$</span><span> cat /etc/allegiances</span></div>
       <div class="t-block">
-        <div><span class="t-comment"># ⚽ Football</span>   → <span class="t-str">Man United (GGMU 🔴) · Messi is GOAT · Ronaldo is THE MAN</span></div>
-        <div><span class="t-comment"># 🏀 Basketball</span> → <span class="t-str">LA Lakers · Chicago Bulls · MJ is GOAT · LeBron is the real deal</span></div>
-      </div>
-      <br>
-      <div class="t-line"><span class="t-comment"># No idea how I got here... but I'm building things anyway.</span></div>
+        <div><span class="t-comment"># ⚽ Football  </span>→ <span class="t-str">Man United (GGMU 🔴) · Messi is GOAT · Ronaldo is THE MAN</span></div>
+        <div><span class="t-comment"># 🏀 Basketball</span>→ <span class="t-str">LA Lakers · Chicago Bulls · MJ is GOAT · LeBron is the real deal</span></div>
+      </div><br>
+      <div class="t-comment"># No idea how I got here... but I'm building things anyway.</div>
     </div>
   </div>
 </section>
@@ -765,55 +417,45 @@
     <div class="section-line"></div>
   </div>
   <div class="projects-grid">
-
     <div class="project-card reveal">
       <div class="project-icon">⚓</div>
       <div class="project-name">NavalStrike</div>
       <div class="project-version">v1.0.0</div>
       <div class="project-desc">Battleship. But neon. But with 25 ship classes, 35 achievements, a Konami code, 5 procedural audio themes, and hard AI with full threat scoring. One <code>.html</code> file.</div>
       <div class="project-badges">
-        <span class="badge cyan">Pure HTML</span>
-        <span class="badge">No Framework</span>
-        <span class="badge">Web Audio API</span>
-        <span class="badge red">35 Achievements</span>
+        <span class="badge cyan">Pure HTML</span><span class="badge">No Framework</span>
+        <span class="badge">Web Audio API</span><span class="badge red">35 Achievements</span>
       </div>
       <div class="project-links">
-        <a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" class="proj-link">▶ Play Live</a>
-        <a href="https://github.com/The-Lazy-Dragon/NavalStrike" target="_blank" class="proj-link">GitHub ↗</a>
+        <a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" class="proj-link clickable">▶ Play Live</a>
+        <a href="https://github.com/The-Lazy-Dragon/NavalStrike" target="_blank" class="proj-link clickable">GitHub ↗</a>
       </div>
     </div>
-
     <div class="project-card red-accent reveal">
       <div class="project-icon">🎮</div>
       <div class="project-name">TicTacToe</div>
       <div class="project-version">The Neon One</div>
       <div class="project-desc">TicTacToe. But with 35 achievements, a built-in terminal console, a Konami code, and an unbeatable Minimax AI. Also one <code>.html</code> file.</div>
       <div class="project-badges">
-        <span class="badge cyan">Pure HTML</span>
-        <span class="badge">Minimax AI</span>
-        <span class="badge red">Dev Console</span>
+        <span class="badge cyan">Pure HTML</span><span class="badge">Minimax AI</span><span class="badge red">Dev Console</span>
       </div>
       <div class="project-links">
-        <a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" class="proj-link">▶ Play Live</a>
-        <a href="https://github.com/The-Lazy-Dragon/lazy-dragons-tictactoe" target="_blank" class="proj-link">GitHub ↗</a>
+        <a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" class="proj-link clickable">▶ Play Live</a>
+        <a href="https://github.com/The-Lazy-Dragon/lazy-dragons-tictactoe" target="_blank" class="proj-link clickable">GitHub ↗</a>
       </div>
     </div>
-
     <div class="project-card reveal">
       <div class="project-icon">🎯</div>
       <div class="project-name">Deadshot Crosshair</div>
       <div class="project-version">v1.1.2</div>
-      <div class="project-desc">Chrome extension for deadshot.io. 15+ crosshair shapes, psychedelic color mode, live FPS/ping HUD, key tracker. No Tampermonkey. No BS.</div>
+      <div class="project-desc">Chrome extension for deadshot.io. 15+ crosshair shapes, psychedelic mode, live FPS/ping HUD, key tracker. No Tampermonkey. No BS.</div>
       <div class="project-badges">
-        <span class="badge cyan">Chrome Extension</span>
-        <span class="badge">15+ Shapes</span>
-        <span class="badge red">Psychedelic Mode</span>
+        <span class="badge cyan">Chrome Extension</span><span class="badge">15+ Shapes</span><span class="badge red">Psychedelic Mode</span>
       </div>
       <div class="project-links">
-        <a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" class="proj-link">GitHub ↗</a>
+        <a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" class="proj-link clickable">GitHub ↗</a>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -828,14 +470,10 @@
     <div class="stack-group">
       <div class="stack-group-title">// Comfortable With</div>
       <div class="stack-items">
-        <div class="stack-item">HTML5</div>
-        <div class="stack-item">CSS3</div>
-        <div class="stack-item">JavaScript</div>
-        <div class="stack-item">Node.js</div>
-        <div class="stack-item">React</div>
-        <div class="stack-item">Python</div>
-        <div class="stack-item">Web Audio API</div>
-        <div class="stack-item">Chrome Extensions</div>
+        <div class="stack-item">HTML5</div><div class="stack-item">CSS3</div>
+        <div class="stack-item">JavaScript</div><div class="stack-item">Node.js</div>
+        <div class="stack-item">React</div><div class="stack-item">Python</div>
+        <div class="stack-item">Web Audio API</div><div class="stack-item">Chrome Extensions</div>
       </div>
     </div>
     <div class="stack-group">
@@ -844,8 +482,7 @@
         <div class="stack-item learning">Unreal Engine</div>
         <div class="stack-item learning">Unity</div>
         <div class="stack-item learning">Game Dev</div>
-      </div>
-      <br>
+      </div><br>
       <div class="stack-group-title">// Chaotic Good</div>
       <div class="stack-items">
         <div class="stack-item chaotic">DLL Manipulation</div>
@@ -864,19 +501,14 @@
     <div class="section-line"></div>
   </div>
   <div class="gaming-grid">
-
-    <!-- MLBB -->
-    <div class="game-card reveal" style="grid-column: span 1;">
+    <div class="game-card reveal">
       <div class="game-header">
         <div class="game-icon">📱</div>
-        <div>
-          <div class="game-title">Mobile Legends</div>
-          <div class="game-subtitle">Bang Bang · Roam Main</div>
-        </div>
+        <div><div class="game-title">Mobile Legends</div><div class="game-subtitle">Bang Bang · Roam Main</div></div>
       </div>
       <div class="mlbb-tabs">
-        <button class="mlbb-tab active" onclick="switchTab(0)">怠竜 Taeryū (Main)</button>
-        <button class="mlbb-tab" onclick="switchTab(1)">龍神 RyŪjin (Old)</button>
+        <button class="mlbb-tab active clickable" onclick="switchTab(0)">怠竜 Taeryū (Main)</button>
+        <button class="mlbb-tab clickable" onclick="switchTab(1)">龍神 RyŪjin (Old)</button>
       </div>
       <div class="mlbb-panel active" id="tab0">
         <div class="game-stat"><span class="stat-key">IGN</span><span class="stat-val cyan">怠竜Taeryū</span></div>
@@ -897,35 +529,25 @@
         <div class="game-stat"><span class="stat-key">Matches</span><span class="stat-val">49</span></div>
       </div>
     </div>
-
-    <!-- Other games -->
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
+    <div style="display:flex;flex-direction:column;gap:1rem;">
       <div class="game-card reveal">
         <div class="game-header">
           <div class="game-icon">⚔️</div>
-          <div>
-            <div class="game-title">Clash Royale</div>
-            <div class="game-subtitle">Supercell ID</div>
-          </div>
+          <div><div class="game-title">Clash Royale</div><div class="game-subtitle">Supercell ID</div></div>
         </div>
         <div class="game-stat"><span class="stat-key">Supercell ID</span><span class="stat-val cyan">RedDragonZx</span></div>
         <div class="game-stat"><span class="stat-key">Clan</span><span class="stat-val">TheLazyDragon</span></div>
       </div>
-
       <div class="game-card reveal">
         <div class="game-header">
           <div class="game-icon">🎮</div>
-          <div>
-            <div class="game-title">Also Playing</div>
-            <div class="game-subtitle">When not coding at 3AM</div>
-          </div>
+          <div><div class="game-title">Also Playing</div><div class="game-subtitle">When not coding at 3AM</div></div>
         </div>
         <div class="game-stat"><span class="stat-key">PC</span><span class="stat-val">Rimworld · Project Zomboid · Valheim</span></div>
         <div class="game-stat"><span class="stat-key">Mobile</span><span class="stat-val">MLBB · Hoop Land</span></div>
         <div class="game-stat"><span class="stat-key">FM</span><span class="stat-val red">Avid fan. Also hater.</span></div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -937,33 +559,25 @@
     <div class="section-line"></div>
   </div>
   <div class="socials-grid reveal">
-    <a href="https://github.com/The-Lazy-Dragon" target="_blank" class="social-card">
+    <a href="https://github.com/The-Lazy-Dragon" target="_blank" class="social-card clickable">
       <div class="social-icon">🐙</div>
-      <div>
-        <div class="social-label">GitHub</div>
-        <div class="social-handle">@The-Lazy-Dragon</div>
-      </div>
+      <div><div class="social-label">GitHub</div><div class="social-handle">@The-Lazy-Dragon</div></div>
     </a>
-    <a href="https://discord.com/users/763960357214486568" target="_blank" class="social-card">
+    <a href="https://discord.com/users/763960357214486568" target="_blank" class="social-card clickable">
       <div class="social-icon">💬</div>
-      <div>
-        <div class="social-label">Discord</div>
-        <div class="social-handle">this.isnt.craig_</div>
-      </div>
+      <div><div class="social-label">Discord</div><div class="social-handle">this.isnt.craig_</div></div>
     </a>
-    <a href="https://reddit.com/u/Red_DevilAS07" target="_blank" class="social-card">
+    <a href="https://reddit.com/u/Red_DevilAS07" target="_blank" class="social-card clickable">
       <div class="social-icon">🤖</div>
-      <div>
-        <div class="social-label">Reddit</div>
-        <div class="social-handle">u/Red_DevilAS07</div>
-      </div>
+      <div><div class="social-label">Reddit</div><div class="social-handle">u/Red_DevilAS07</div></div>
     </a>
-    <a href="https://open.spotify.com/user/31lom3w2pbow54uirczkccez6pxm" target="_blank" class="social-card">
+    <a href="https://open.spotify.com/user/31lom3w2pbow54uirczkccez6pxm" target="_blank" class="social-card clickable">
       <div class="social-icon">🎵</div>
-      <div>
-        <div class="social-label">Spotify</div>
-        <div class="social-handle">The Lazy Dragon 👻</div>
-      </div>
+      <div><div class="social-label">Spotify</div><div class="social-handle">The Lazy Dragon 👻</div></div>
+    </a>
+    <a href="mailto:gauranga.koirala.npl@gmail.com" class="social-card clickable">
+      <div class="social-icon">📧</div>
+      <div><div class="social-label">Email</div><div class="social-handle">gauranga.koirala.npl@gmail.com</div></div>
     </a>
   </div>
 </section>
@@ -972,140 +586,274 @@
 <footer>
   <span class="footer-logo">怠竜 · TEARYŪ</span>
   <div>Built with zero frameworks and questionable life choices.</div>
-  <div style="margin-top:0.5rem; color: #3a486a;">
-    Try: <span style="color: var(--accent)">↑ ↑ ↓ ↓ ← → ← → B A</span> &nbsp;·&nbsp; you'll know when you find it.
+  <div style="margin-top:0.5rem;color:#3a486a;">
+    Try: <span style="color:var(--accent)">↑ ↑ ↓ ↓ ← → ← → B A</span> &nbsp;·&nbsp; you know what it does.
   </div>
-  <div style="margin-top: 1rem;">
-    <a href="https://github.com/The-Lazy-Dragon">GitHub</a> &nbsp;·&nbsp;
-    <a href="https://reddit.com/u/Red_DevilAS07">Reddit</a> &nbsp;·&nbsp;
-    <a href="https://open.spotify.com/user/31lom3w2pbow54uirczkccez6pxm">Spotify</a>
+  <div style="margin-top:1rem;">
+    <a href="https://github.com/The-Lazy-Dragon" class="clickable">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://reddit.com/u/Red_DevilAS07" class="clickable">Reddit</a> &nbsp;·&nbsp;
+    <a href="mailto:gauranga.koirala.npl@gmail.com" class="clickable">Email</a>
   </div>
 </footer>
 
 <script>
-  // ── CURSOR ──────────────────────────────────────────────────────────
-  const cursor = document.getElementById('cursor');
-  let mx = -100, my = -100;
-  document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
-    cursor.style.left = mx + 'px';
-    cursor.style.top  = my + 'px';
-  });
-  document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
-  document.addEventListener('mouseup',   () => cursor.classList.remove('clicking'));
+// ── LOADING ──────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const ld = document.getElementById('loading');
+    ld.classList.add('fade-out');
+    setTimeout(() => ld.remove(), 700);
+  }, 1800);
+});
 
-  // ── CURSOR TRAIL ─────────────────────────────────────────────────────
-  const tc = document.getElementById('trail-canvas');
-  const tctx = tc.getContext('2d');
-  tc.width  = window.innerWidth;
-  tc.height = window.innerHeight;
-  window.addEventListener('resize', () => {
-    tc.width  = window.innerWidth;
-    tc.height = window.innerHeight;
-  });
-  const dots = [];
-  let lastTrail = 0;
-  document.addEventListener('mousemove', e => {
-    if (Date.now() - lastTrail < 40) return;
-    lastTrail = Date.now();
-    dots.push({ x: e.clientX, y: e.clientY, life: 1 });
-  });
-  (function trailLoop() {
-    tctx.clearRect(0, 0, tc.width, tc.height);
-    for (let i = dots.length - 1; i >= 0; i--) {
-      const d = dots[i];
-      d.life -= 0.04;
-      if (d.life <= 0) { dots.splice(i, 1); continue; }
-      tctx.beginPath();
-      tctx.arc(d.x, d.y, 3 * d.life, 0, Math.PI * 2);
-      tctx.fillStyle = `rgba(0,255,247,${d.life * 0.6})`;
-      tctx.fill();
-    }
-    requestAnimationFrame(trailLoop);
-  })();
-
-  // ── TYPEWRITER ───────────────────────────────────────────────────────
-  const lines = [
-    'BSc IT Student @ IIC, Itahari',
-    'Building things way too complex for no reason',
-    'No frameworks. No installs. One file.',
-    'Roam main. Former Alucard. 95.2% WR.',
-    'GGMU. Fuck oil money.',
-    'MJ is GOAT. LeBron is the real deal.',
-    'Built at 3AM because nothing else to do.',
-    'Avid fan and hater of Football Manager.',
-  ];
-  let li = 0, ci = 0, deleting = false;
-  const tw = document.getElementById('typewriter');
-  function type() {
-    const cur = lines[li];
-    if (!deleting) {
-      tw.textContent = cur.slice(0, ++ci);
-      if (ci === cur.length) { deleting = true; setTimeout(type, 2000); return; }
-      setTimeout(type, 55);
-    } else {
-      tw.textContent = cur.slice(0, --ci);
-      if (ci === 0) { deleting = false; li = (li + 1) % lines.length; setTimeout(type, 400); return; }
-      setTimeout(type, 28);
-    }
-  }
-  setTimeout(type, 1400);
-
-  // ── SCROLL REVEAL ────────────────────────────────────────────────────
-  const reveals = document.querySelectorAll('.reveal');
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-  }, { threshold: 0.1 });
-  reveals.forEach(r => io.observe(r));
-
-  // ── MATRIX RAIN ──────────────────────────────────────────────────────
-  const mc = document.getElementById('matrix-canvas');
-  const mctx = mc.getContext('2d');
-  mc.width  = window.innerWidth;
-  mc.height = window.innerHeight;
-  window.addEventListener('resize', () => { mc.width = window.innerWidth; mc.height = window.innerHeight; });
-  const cols = Math.floor(window.innerWidth / 14);
-  const drops = Array(cols).fill(1);
-  let matrixActive = false, matrixInterval;
-  function drawMatrix() {
-    mctx.fillStyle = 'rgba(24,36,51,0.05)';
-    mctx.fillRect(0, 0, mc.width, mc.height);
-    mctx.fillStyle = '#00fff7';
-    mctx.font = '13px Share Tech Mono';
-    drops.forEach((y, i) => {
-      const ch = String.fromCharCode(0x30A0 + Math.random() * 96);
-      mctx.fillText(ch, i * 14, y * 14);
-      if (y * 14 > mc.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
+// ── AUDIO ────────────────────────────────────────────────────────────
+let audioCtx;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playHover() {
+  try {
+    const ctx = getCtx();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(1100, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.06);
+    g.gain.setValueAtTime(0.06, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.08);
+  } catch(e){}
+}
+function playClick() {
+  try {
+    const ctx = getCtx();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(220, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.12);
+    g.gain.setValueAtTime(0.3, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.12);
+    // noise tick
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1)*0.15;
+    const s = ctx.createBufferSource(), g2 = ctx.createGain();
+    s.buffer = buf; s.connect(g2); g2.connect(ctx.destination);
+    g2.gain.setValueAtTime(0.4, ctx.currentTime);
+    g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.02);
+    s.start(ctx.currentTime);
+  } catch(e){}
+}
+function playDragon() {
+  try {
+    const ctx = getCtx();
+    [110, 138, 165, 220, 277].forEach((f,i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sawtooth'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, ctx.currentTime + i * 0.07);
+      g.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i*0.07 + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.07 + 0.5);
+      o.start(ctx.currentTime + i*0.07);
+      o.stop(ctx.currentTime + i*0.07 + 0.5);
     });
-  }
+  } catch(e){}
+}
 
-  // ── KONAMI ───────────────────────────────────────────────────────────
-  const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-  let kseq = [];
-  document.addEventListener('keydown', e => {
-    kseq.push(e.key);
-    if (kseq.length > KONAMI.length) kseq.shift();
-    if (JSON.stringify(kseq) === JSON.stringify(KONAMI)) toggleKonami();
+// ── CURSOR ───────────────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+
+function attachClickables() {
+  document.querySelectorAll('a, button, .clickable, [onclick]').forEach(el => {
+    if (el._hoverAttached) return;
+    el._hoverAttached = true;
+    el.addEventListener('mouseenter', () => {
+      cursor.textContent = '↝';
+      cursor.classList.add('hovering');
+      playHover();
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.textContent = '◌';
+      cursor.classList.remove('hovering');
+    });
   });
-  function toggleKonami() {
-    matrixActive = !matrixActive;
-    mc.classList.toggle('active', matrixActive);
-    document.getElementById('konami-banner').classList.toggle('active', matrixActive);
-    document.body.classList.toggle('konami-active', matrixActive);
-    if (matrixActive) {
-      matrixInterval = setInterval(drawMatrix, 50);
-    } else {
-      clearInterval(matrixInterval);
-      mctx.clearRect(0, 0, mc.width, mc.height);
-    }
-  }
+}
+attachClickables();
 
-  // ── MLBB TABS ────────────────────────────────────────────────────────
-  function switchTab(idx) {
-    document.querySelectorAll('.mlbb-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
-    document.querySelectorAll('.mlbb-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+document.addEventListener('mousedown', () => { cursor.classList.add('clicking'); playClick(); });
+document.addEventListener('mouseup',   () => cursor.classList.remove('clicking'));
+
+// ── TRAIL ────────────────────────────────────────────────────────────
+const tc = document.getElementById('trail-canvas');
+const tctx = tc.getContext('2d');
+function resizeTrail() { tc.width = window.innerWidth; tc.height = window.innerHeight; }
+resizeTrail(); window.addEventListener('resize', resizeTrail);
+const dots = []; let lastT = 0;
+document.addEventListener('mousemove', e => {
+  if (Date.now() - lastT < 40) return; lastT = Date.now();
+  dots.push({ x: e.clientX, y: e.clientY, life: 1 });
+});
+(function trailLoop() {
+  tctx.clearRect(0, 0, tc.width, tc.height);
+  for (let i = dots.length-1; i >= 0; i--) {
+    const d = dots[i]; d.life -= 0.045;
+    if (d.life <= 0) { dots.splice(i,1); continue; }
+    tctx.beginPath();
+    tctx.arc(d.x, d.y, 3*d.life, 0, Math.PI*2);
+    tctx.fillStyle = `rgba(0,255,247,${d.life*0.55})`;
+    tctx.fill();
   }
+  requestAnimationFrame(trailLoop);
+})();
+
+// ── TYPEWRITER ───────────────────────────────────────────────────────
+const lines = [
+  'BSc IT Student @ IIC, Itahari',
+  'Building things way too complex for no reason',
+  'No frameworks. No installs. One file.',
+  'Roam main. Former Alucard. 95.2% WR.',
+  'GGMU. Fuck oil money.',
+  'MJ is GOAT. LeBron is the real deal.',
+  'Built at 3AM because nothing else to do.',
+  'Avid fan and hater of Football Manager.',
+];
+let li=0, ci=0, del=false;
+const tw = document.getElementById('typewriter');
+function type() {
+  const cur = lines[li];
+  if (!del) {
+    tw.textContent = cur.slice(0,++ci);
+    if (ci===cur.length){del=true;setTimeout(type,2200);return;}
+    setTimeout(type,55);
+  } else {
+    tw.textContent = cur.slice(0,--ci);
+    if (ci===0){del=false;li=(li+1)%lines.length;setTimeout(type,400);return;}
+    setTimeout(type,28);
+  }
+}
+setTimeout(type, 2000);
+
+// ── SCROLL REVEAL ────────────────────────────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);} });
+}, { threshold:0.1 });
+document.querySelectorAll('.reveal').forEach(r => io.observe(r));
+
+// ── MATRIX / KONAMI ──────────────────────────────────────────────────
+const mc = document.getElementById('matrix-canvas');
+const mctx = mc.getContext('2d');
+function resizeMatrix() { mc.width=window.innerWidth; mc.height=window.innerHeight; }
+resizeMatrix(); window.addEventListener('resize', resizeMatrix);
+
+let drops = [];
+function initDrops() { drops = Array(Math.floor(window.innerWidth/14)).fill(1); }
+initDrops(); window.addEventListener('resize', initDrops);
+
+let rainMode = 'binary'; // 'binary' or 'japanese'
+let matrixActive = false, matrixRaf;
+
+function getRainChar() {
+  if (rainMode === 'binary') return Math.random() > 0.5 ? '1' : '0';
+  return String.fromCharCode(0x30A0 + Math.random() * 96);
+}
+function getRainColor() {
+  return matrixActive && !document.body.classList.contains('konami')
+    ? '#00ff41'
+    : document.body.classList.contains('konami') ? '#00ff41' : '#00fff7';
+}
+
+function drawMatrix() {
+  mctx.fillStyle = 'rgba(0,5,0,0.055)';
+  mctx.fillRect(0,0,mc.width,mc.height);
+  mctx.fillStyle = getRainColor();
+  mctx.font = '14px Share Tech Mono';
+  drops.forEach((y,i) => {
+    const ch = getRainChar();
+    mctx.fillText(ch, i*14, y*14);
+    if (y*14 > mc.height && Math.random() > 0.97) drops[i] = 0;
+    drops[i]++;
+  });
+  matrixRaf = requestAnimationFrame(drawMatrix);
+}
+
+function setRainMode(mode) {
+  rainMode = mode;
+  document.getElementById('btn-bin').classList.toggle('active', mode==='binary');
+  document.getElementById('btn-jap').classList.toggle('active', mode==='japanese');
+}
+
+function toggleKonami() {
+  matrixActive = !matrixActive;
+  const banner  = document.getElementById('konami-banner');
+  const nav     = document.getElementById('main-nav');
+  const toggle  = document.getElementById('rain-toggle');
+
+  if (matrixActive) {
+    document.body.classList.add('konami');
+    mc.classList.add('active');
+    banner.classList.add('active');
+    nav.classList.add('banner-open');
+    toggle.classList.add('visible');
+    mctx.clearRect(0,0,mc.width,mc.height);
+    initDrops();
+    drawMatrix();
+    attachClickables();
+    // chord sfx
+    try {
+      const ctx = getCtx();
+      [261,329,392,523].forEach((f,i) => {
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=f;
+        g.gain.setValueAtTime(0.15,ctx.currentTime+i*0.08);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.08+0.25);
+        o.start(ctx.currentTime+i*0.08);o.stop(ctx.currentTime+i*0.08+0.25);
+      });
+    } catch(e){}
+  } else {
+    document.body.classList.remove('konami');
+    mc.classList.remove('active');
+    banner.classList.remove('active');
+    nav.classList.remove('banner-open');
+    toggle.classList.remove('visible');
+    cancelAnimationFrame(matrixRaf);
+    mctx.clearRect(0,0,mc.width,mc.height);
+  }
+}
+
+const KONAMI=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let kseq=[];
+document.addEventListener('keydown', e => {
+  kseq.push(e.key);
+  if (kseq.length > KONAMI.length) kseq.shift();
+  if (JSON.stringify(kseq)===JSON.stringify(KONAMI)) toggleKonami();
+});
+
+// ── SECRET DRAGON ────────────────────────────────────────────────────
+function triggerDragon() {
+  const ov = document.getElementById('dragon-overlay');
+  ov.classList.add('active');
+  playDragon();
+}
+function closeDragon() {
+  document.getElementById('dragon-overlay').classList.remove('active');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDragon();
+});
+
+// ── MLBB TABS ────────────────────────────────────────────────────────
+function switchTab(idx) {
+  document.querySelectorAll('.mlbb-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.mlbb-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
 </script>
 </body>
 </html>
