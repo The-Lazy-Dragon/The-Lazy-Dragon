@@ -180,5 +180,5 @@ build_time: 3AM – 4AM (prime hours, honestly)
 *⭐ Star a repo if the Konami code made you smile*
 
 `怠竜 · TEARYŪ` — **The Lazy Dragon**
-
+[My Website- Have fun lol](https://the-lazy-dragon.github.io/The-Lazy-Dragon/)
 </div>
