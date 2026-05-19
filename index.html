@@ -1,346 +1,399 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>怠竜 Tearyū · The Lazy Dragon</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg:     #182433;
-      --panel:  #1e2e42;
-      --panel2: #162030;
-      --accent: #00fff7;
-      --danger: #ff153f;
-      --crimson:#712637;
-      --mid:    #3a486a;
-      --text:   #c8e6f0;
-      --dim:    #7a9ab0;
-      --glow:     0 0 10px #00fff7, 0 0 30px #00fff740;
-      --glow-red: 0 0 10px #ff153f, 0 0 30px #ff153f40;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; }
-    body {
-      background:var(--bg); color:var(--text);
-      font-family:'Share Tech Mono',monospace;
-      overflow-x:hidden; cursor:none;
-      transition:background 0.5s, color 0.5s;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>怠竜 Tearyū · The Lazy Dragon</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#182433;--panel:#1e2e42;--panel2:#162030;--accent:#00fff7;--danger:#ff153f;--crimson:#712637;--mid:#3a486a;--text:#c8e6f0;--dim:#7a9ab0;--glow:0 0 10px #00fff7,0 0 30px #00fff740;--glow-red:0 0 10px #ff153f,0 0 30px #ff153f40}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;overflow-x:hidden;cursor:none;transition:background .5s,color .5s}
 
-    /* ── LOADING ── */
-    #loading {
-      position:fixed; inset:0; background:var(--bg);
-      z-index:99999; display:flex; flex-direction:column;
-      align-items:center; justify-content:center; gap:1.5rem;
-      transition:opacity 0.7s;
-    }
-    #loading.fade-out { opacity:0; pointer-events:none; }
-    #load-symbol {
-      font-size:96px; color:var(--accent); text-shadow:var(--glow);
-      animation:loadPulse 1.2s ease-in-out infinite;
-      line-height:1; user-select:none;
-    }
-    #load-text { font-size:0.7rem; letter-spacing:5px; color:var(--dim); text-transform:uppercase; animation:loadBlink 1.2s ease-in-out infinite; }
-    @keyframes loadPulse { 0%,100%{opacity:1;transform:scale(1);text-shadow:0 0 10px var(--accent),0 0 40px var(--accent)} 50%{opacity:0.15;transform:scale(0.75);text-shadow:none} }
-    @keyframes loadBlink { 0%,100%{opacity:0.8} 50%{opacity:0.15} }
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;transition:opacity .7s}
+#loading.fade-out{opacity:0;pointer-events:none}
+#load-symbol{font-size:96px;color:var(--accent);text-shadow:var(--glow);animation:loadPulse 1.2s ease-in-out infinite;line-height:1;user-select:none}
+#load-text{font-size:.7rem;letter-spacing:5px;color:var(--dim);text-transform:uppercase;animation:loadBlink 1.2s ease-in-out infinite}
+@keyframes loadPulse{0%,100%{opacity:1;transform:scale(1);text-shadow:0 0 10px var(--accent),0 0 40px var(--accent)}50%{opacity:.15;transform:scale(.75);text-shadow:none}}
+@keyframes loadBlink{0%,100%{opacity:.8}50%{opacity:.15}}
 
-    /* ── CURSOR ── */
-    #cursor {
-      position:fixed; top:0; left:0; pointer-events:none; z-index:99998;
-      transform:translate(-50%,-50%); font-size:30px; line-height:1;
-      color:var(--accent); text-shadow:var(--glow); user-select:none;
-      transition:color 0.15s, text-shadow 0.15s, font-size 0.15s;
-      will-change:transform;
-    }
-    #cursor.hovering { font-size:34px; color:var(--danger); text-shadow:var(--glow-red); }
-    #cursor.clicking { font-size:22px; }
+/* ── CURSOR ── */
+#cursor{position:fixed;top:0;left:0;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);font-size:30px;line-height:1;color:var(--accent);text-shadow:var(--glow);user-select:none;transition:color .15s,font-size .15s;will-change:transform}
+#cursor.loading-state{animation:cursorLoad .7s ease-in-out infinite}
+#cursor.hovering{font-size:34px;color:var(--danger);text-shadow:var(--glow-red)}
+#cursor.clicking{font-size:22px}
+@keyframes cursorLoad{0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)}50%{opacity:.2;transform:translate(-50%,-50%) scale(.6)}}
+#trail-canvas,#click-canvas,#matrix-canvas{position:fixed;inset:0;pointer-events:none}
+#trail-canvas{z-index:99997}#click-canvas{z-index:99996}#matrix-canvas{z-index:8999;opacity:0;transition:opacity .6s}
+#matrix-canvas.active{opacity:.22}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9000}
 
-    #trail-canvas { position:fixed; inset:0; pointer-events:none; z-index:99997; }
+/* ── FLASH OVERLAYS ── */
+#flash-overlay{position:fixed;inset:0;pointer-events:none;z-index:8998;opacity:0;transition:opacity .2s}
+#zzz-container{position:fixed;inset:0;pointer-events:none;z-index:8997;display:none}
 
-    /* ── SCANLINES ── */
-    body::before {
-      content:''; position:fixed; inset:0;
-      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
-      pointer-events:none; z-index:9000;
-    }
+/* ── KONAMI BANNER ── */
+#konami-banner{position:fixed;top:0;left:0;right:0;height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.7rem;letter-spacing:3px;color:var(--accent);background:rgba(0,0,0,.9);border-bottom:0 solid var(--accent);z-index:9997;transition:height .4s,border-bottom-width .4s;white-space:nowrap}
+#konami-banner.active{height:36px;border-bottom-width:1px}
+nav{position:fixed;left:0;right:0;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:linear-gradient(to bottom,var(--bg) 60%,transparent);border-bottom:1px solid #ffffff08;transition:top .4s,background .5s}
+nav.banner-open{top:36px}
 
-    /* ── MATRIX ── */
-    #matrix-canvas { position:fixed; inset:0; pointer-events:none; z-index:8999; opacity:0; transition:opacity 0.6s; }
-    #matrix-canvas.active { opacity:0.22; }
+/* ── RAIN TOGGLE ── */
+#rain-toggle{position:fixed;top:1rem;left:1rem;z-index:9998;flex-direction:column;display:none;opacity:0;transition:opacity .4s}
+#rain-toggle.visible{display:flex;opacity:1}
+.rtbtn{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:2px;text-transform:uppercase;padding:.3rem .7rem;cursor:none;background:transparent;border:1px solid var(--accent);color:var(--dim);transition:all .2s}
+.rtbtn:first-child{border-bottom:none}.rtbtn.active{background:var(--accent);color:var(--bg)}
 
-    /* ── KONAMI BANNER — pushes nav down ── */
-    #konami-banner {
-      position:fixed; top:0; left:0; right:0;
-      height:0; overflow:hidden;
-      display:flex; align-items:center; justify-content:center;
-      font-size:0.72rem; letter-spacing:3px;
-      color:var(--accent); background:rgba(0,0,0,0.85);
-      border-bottom:0px solid var(--accent);
-      z-index:9997;
-      transition:height 0.4s ease, border-bottom-width 0.4s ease;
-      white-space:nowrap;
-    }
-    #konami-banner.active {
-      height:36px;
-      border-bottom-width:1px;
-    }
+/* ── ACHIEVEMENT BTN ── */
+#ach-btn{position:fixed;top:1rem;right:1rem;z-index:9998;font-size:1.2rem;border:1px solid var(--accent);background:transparent;padding:.3rem .5rem;cursor:none;display:none;color:var(--accent);transition:all .2s}
+#ach-btn:hover{background:var(--accent);color:var(--bg)}
+#ach-modal{position:fixed;top:3.5rem;right:1rem;z-index:9998;background:var(--panel2);border:1px solid var(--accent);min-width:240px;display:none;max-height:70vh;overflow-y:auto}
+#ach-modal.show{display:block}
+.ach-header{padding:.6rem 1rem;border-bottom:1px solid var(--mid);font-size:.65rem;letter-spacing:3px;color:var(--accent)}
+.ach-item{padding:.5rem 1rem;font-size:.7rem;border-bottom:1px solid #ffffff06;display:flex;gap:.6rem;align-items:flex-start}
+.ach-item.locked{opacity:.3}.ach-icon{font-size:1rem;min-width:1.4rem}
+.ach-name{color:var(--text);letter-spacing:1px}.ach-desc{font-size:.6rem;color:var(--dim);margin-top:.1rem}
 
-    /* nav shifts down when banner is open */
-    nav {
-      position:fixed; left:0; right:0; top:0;
-      z-index:100;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:1rem 3rem;
-      background:linear-gradient(to bottom,var(--bg) 60%,transparent);
-      border-bottom:1px solid #ffffff08;
-      transition:top 0.4s ease, background 0.5s;
-    }
-    nav.banner-open { top:36px; }
+/* ── THEME OVERRIDES ── */
+body.konami{--accent:#00ff41;--glow:0 0 10px #00ff41,0 0 30px #00ff4160;--text:#b0ffb0;--dim:#55aa55;--mid:#1a4a1a;--panel:#0a1a0a;--panel2:#060e06;--bg:#030f03}
+body.dragon-mode{--accent:#ff153f;--glow:0 0 10px #ff153f,0 0 30px #ff153f60;--text:#ffb0b0;--dim:#aa5555;--mid:#4a1a1a;--panel:#1a0505;--panel2:#0f0303;--bg:#080000;--danger:#ff6030}
 
-    /* ── RAIN MODE TOGGLE (top-left corner) ── */
-    #rain-toggle {
-      position:fixed; top:1rem; left:1rem; z-index:9998;
-      display:none; flex-direction:column; gap:0;
-      opacity:0; transition:opacity 0.4s;
-    }
-    #rain-toggle.visible { display:flex; opacity:1; }
-    .rtbtn {
-      font-family:'Share Tech Mono',monospace;
-      font-size:0.6rem; letter-spacing:2px; text-transform:uppercase;
-      padding:0.3rem 0.7rem; cursor:none;
-      background:transparent; border:1px solid var(--accent);
-      color:var(--dim); transition:all 0.2s;
-    }
-    .rtbtn:first-child { border-bottom:none; }
-    .rtbtn.active { background:var(--accent); color:var(--bg); }
+/* ── NAV ── */
+.nav-logo{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;color:var(--accent);text-shadow:var(--glow);text-decoration:none;letter-spacing:2px}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--dim);text-decoration:none;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent);transition:width .3s}
+.nav-links a:hover{color:var(--accent)}.nav-links a:hover::after{width:100%}
+@media(max-width:520px){.nav-links{display:none}}
 
-    /* ── GREEN KONAMI MODE ── */
-    body.konami {
-      --accent:#00ff41; --glow:0 0 10px #00ff41,0 0 30px #00ff4160;
-      --text:#b0ffb0; --dim:#55aa55; --mid:#1a4a1a;
-      --panel:#0a1a0a; --panel2:#060e06; --bg:#030f03;
-    }
+/* ── HERO ── */
+section{padding:6rem 3rem;max-width:1100px;margin:0 auto}
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:0 3rem;max-width:100%;position:relative;overflow:hidden}
+.hero-bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,247,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)}
+.hero-tag{font-size:.7rem;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:1.5rem;opacity:0;animation:fadeUp .6s .3s forwards}
+.hero-name{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,8vw,7rem);font-weight:900;line-height:.95;color:var(--text);margin-bottom:.5rem;opacity:0;animation:fadeUp .6s .5s forwards}
+.hero-name .kanji{display:block;font-size:clamp(1rem,4vw,3.5rem);color:var(--accent);text-shadow:var(--glow);letter-spacing:6px;margin-bottom:.3rem}
+.glitch{position:relative;display:inline-block}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;opacity:0}
+.glitch:hover::before{animation:glitch1 .3s steps(2) forwards;color:var(--danger);clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);opacity:1}
+.glitch:hover::after{animation:glitch2 .3s steps(2) .05s forwards;color:var(--accent);clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);opacity:1}
+@keyframes glitch1{0%{transform:translate(-3px,0)}50%{transform:translate(3px,0)}100%{transform:translate(0,0)}}
+@keyframes glitch2{0%{transform:translate(3px,0)}50%{transform:translate(-3px,0)}100%{transform:translate(0,0)}}
+.hero-subtitle{font-size:clamp(.8rem,2vw,1.1rem);color:var(--dim);margin-top:1.5rem;min-height:1.5em;opacity:0;animation:fadeUp .6s .9s forwards}
+.cursor-blink{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:3px;vertical-align:text-bottom;animation:blink 1s infinite}
+.hero-cta{display:flex;gap:1rem;margin-top:2.5rem;flex-wrap:wrap;opacity:0;animation:fadeUp .6s 1.1s forwards}
+.btn{display:inline-block;padding:.7rem 1.8rem;font-family:'Share Tech Mono',monospace;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:none;transition:all .2s;position:relative;overflow:hidden}
+.btn::before{content:'';position:absolute;inset:0;background:var(--accent);transform:translateX(-101%);transition:transform .25s;z-index:-1}
+.btn:hover{color:var(--bg)}.btn:hover::before{transform:translateX(0)}
+.btn.danger{border-color:var(--danger);color:var(--danger)}.btn.danger::before{background:var(--danger)}.btn.danger:hover{color:#fff}
+.hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--dim);font-size:.65rem;letter-spacing:3px;opacity:0;animation:fadeUp .6s 1.5s forwards}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--accent),transparent);animation:scrollPulse 2s infinite}
 
-    /* ── NAV ── */
-    .nav-logo {
-      font-family:'Orbitron',sans-serif; font-size:0.9rem; font-weight:700;
-      color:var(--accent); text-shadow:var(--glow); text-decoration:none; letter-spacing:2px;
-    }
-    .nav-links { display:flex; gap:2rem; list-style:none; }
-    .nav-links a {
-      color:var(--dim); text-decoration:none; font-size:0.75rem;
-      letter-spacing:2px; text-transform:uppercase; transition:color 0.2s; position:relative;
-    }
-    .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px; background:var(--accent); transition:width 0.3s; }
-    .nav-links a:hover { color:var(--accent); }
-    .nav-links a:hover::after { width:100%; }
+/* ── ORB ── */
+#secret-orb{position:fixed;bottom:2rem;right:2rem;z-index:500;width:52px;height:52px;border-radius:50%;border:1px solid var(--accent);background:transparent;cursor:none;transition:all .3s;display:flex;align-items:center;justify-content:center;animation:orbPulse 3s infinite}
+#secret-orb:hover{background:#00fff720;box-shadow:var(--glow);transform:scale(1.15)}
+.orb-symbol{font-size:20px;color:var(--accent);pointer-events:none}
+.orb-hint{position:absolute;right:60px;bottom:50%;transform:translateY(50%);font-size:.6rem;letter-spacing:2px;color:var(--dim);white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none}
+#secret-orb:hover .orb-hint{opacity:1}
+@keyframes orbPulse{0%,100%{box-shadow:0 0 0 0 #00fff740}50%{box-shadow:0 0 0 8px #00fff710}}
+@media(max-width:768px){#secret-orb{bottom:1rem;right:1rem;width:44px;height:44px}}
 
-    /* ── HERO ── */
-    section { padding:6rem 3rem; max-width:1100px; margin:0 auto; }
-    #hero {
-      min-height:100vh; display:flex; flex-direction:column;
-      justify-content:center; align-items:flex-start;
-      padding:0 3rem; max-width:100%; position:relative; overflow:hidden;
-    }
-    .hero-bg-grid {
-      position:absolute; inset:0;
-      background-image:linear-gradient(rgba(0,255,247,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,247,0.03) 1px,transparent 1px);
-      background-size:60px 60px;
-      mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
-    }
-    .hero-tag { font-size:0.7rem; letter-spacing:4px; color:var(--accent); text-transform:uppercase; margin-bottom:1.5rem; opacity:0; animation:fadeUp 0.6s 0.3s forwards; }
-    .hero-name { font-family:'Orbitron',sans-serif; font-size:clamp(2.5rem,8vw,7rem); font-weight:900; line-height:0.95; color:var(--text); margin-bottom:0.5rem; opacity:0; animation:fadeUp 0.6s 0.5s forwards; }
-    .hero-name .kanji { display:block; font-size:clamp(1.2rem,4vw,3.5rem); color:var(--accent); text-shadow:var(--glow); letter-spacing:6px; margin-bottom:0.3rem; }
-    .glitch { position:relative; display:inline-block; }
-    .glitch::before,.glitch::after { content:attr(data-text); position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; }
-    .glitch:hover::before { animation:glitch1 0.3s steps(2) forwards; color:var(--danger); clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%); opacity:1; }
-    .glitch:hover::after  { animation:glitch2 0.3s steps(2) 0.05s forwards; color:var(--accent); clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%); opacity:1; }
-    @keyframes glitch1 { 0%{transform:translate(-3px,0)} 50%{transform:translate(3px,0)} 100%{transform:translate(0,0)} }
-    @keyframes glitch2 { 0%{transform:translate(3px,0)} 50%{transform:translate(-3px,0)} 100%{transform:translate(0,0)} }
+/* ── GAME OVERLAY ── */
+#dragon-overlay{position:fixed;inset:0;z-index:9990;background:#000;opacity:0;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.7rem;transition:opacity .4s;overflow-y:auto;padding:1rem}
+#dragon-overlay.active{opacity:1;pointer-events:all}
+#game-title{font-family:'Orbitron',sans-serif;font-size:clamp(.85rem,3vw,1.4rem);font-weight:900;color:var(--danger);text-shadow:var(--glow-red);letter-spacing:4px;text-align:center}
+#game-sub{font-size:.62rem;letter-spacing:2px;color:#ff153f80;text-align:center}
+.game-wrap{position:relative;display:inline-block}
+#game-canvas{display:block;border:1px solid var(--danger);box-shadow:var(--glow-red);max-width:min(340px,calc(100vw - 40px))}
+.game-screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:rgba(0,0,0,.93);text-align:center;padding:1rem}
+.game-screen.show{display:flex}
+.gs-title{font-family:'Orbitron',sans-serif;font-size:clamp(.9rem,4vw,1.8rem);font-weight:900;letter-spacing:3px}
+.gs-sub{font-size:.68rem;letter-spacing:1px;color:var(--dim);line-height:1.9;max-width:280px}
+.gs-btn{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:2px;padding:.6rem 1.4rem;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:none;transition:all .2s;text-transform:uppercase}
+.gs-btn:hover{background:var(--accent);color:var(--bg)}
+.gs-btn.red{border-color:var(--danger);color:var(--danger)}.gs-btn.red:hover{background:var(--danger);color:#fff}
+.gs-btn-row{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+#game-dpad{display:none;grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,50px);gap:5px;margin-top:.4rem}
+#game-dpad button{font-size:1.3rem;background:#1a0a0a;border:1px solid #ff153f60;color:var(--danger);cursor:none;border-radius:4px;font-family:'Share Tech Mono',monospace;transition:background .1s;-webkit-user-select:none;user-select:none;touch-action:none}
+#game-dpad button:active{background:#ff153f30}
+#game-close{font-size:.65rem;letter-spacing:3px;color:#ff153f40;cursor:none;border:1px solid #ff153f20;padding:.4rem 1.2rem;transition:all .2s;background:transparent;font-family:'Share Tech Mono',monospace}
+#game-close:hover{color:var(--danger);border-color:var(--danger)}
 
-    .hero-subtitle { font-size:clamp(0.8rem,2vw,1.1rem); color:var(--dim); margin-top:1.5rem; min-height:1.5em; opacity:0; animation:fadeUp 0.6s 0.9s forwards; }
-    .cursor-blink { display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:3px; vertical-align:text-bottom; animation:blink 1s infinite; }
-    .hero-cta { display:flex; gap:1rem; margin-top:2.5rem; flex-wrap:wrap; opacity:0; animation:fadeUp 0.6s 1.1s forwards; }
-    .btn {
-      display:inline-block; padding:0.7rem 1.8rem;
-      font-family:'Share Tech Mono',monospace; font-size:0.75rem;
-      letter-spacing:2px; text-transform:uppercase; text-decoration:none;
-      border:1px solid var(--accent); color:var(--accent);
-      background:transparent; cursor:none; transition:all 0.2s;
-      position:relative; overflow:hidden;
-    }
-    .btn::before { content:''; position:absolute; inset:0; background:var(--accent); transform:translateX(-101%); transition:transform 0.25s; z-index:-1; }
-    .btn:hover { color:var(--bg); }
-    .btn:hover::before { transform:translateX(0); }
-    .btn.danger { border-color:var(--danger); color:var(--danger); }
-    .btn.danger::before { background:var(--danger); }
-    .btn.danger:hover { color:#fff; }
+/* ── RICK SCREEN ── */
+#rick-screen{position:fixed;inset:0;z-index:99990;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;text-align:center;padding:2rem}
+#rick-screen.show{display:flex}
+#rick-title{font-family:'Orbitron',sans-serif;font-size:clamp(.8rem,2.5vw,1.3rem);color:var(--danger);letter-spacing:3px;text-shadow:var(--glow-red)}
+#rick-count{font-family:'Orbitron',sans-serif;font-size:5rem;font-weight:900;color:var(--accent);text-shadow:var(--glow);animation:loadPulse .8s ease-in-out infinite}
+#rick-msg{font-size:.75rem;color:var(--dim);letter-spacing:2px}
+#rick-prize-btn{display:none;font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;padding:1rem 2.5rem;background:var(--danger);color:#fff;border:none;cursor:none;text-decoration:none;text-transform:uppercase;animation:orbPulse 1.5s infinite;box-shadow:var(--glow-red);transition:transform .2s}
+#rick-prize-btn:hover{transform:scale(1.05)}
+#rick-close{display:none;font-size:.65rem;letter-spacing:3px;color:var(--dim);cursor:none;border:1px solid var(--mid);padding:.4rem 1.2rem;transition:all .2s;background:transparent;font-family:'Share Tech Mono',monospace;text-decoration:none}
+#rick-close:hover{color:var(--accent);border-color:var(--accent)}
 
-    .hero-scroll { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:0.5rem; color:var(--dim); font-size:0.65rem; letter-spacing:3px; opacity:0; animation:fadeUp 0.6s 1.5s forwards; }
-    .scroll-line { width:1px; height:40px; background:linear-gradient(to bottom,var(--accent),transparent); animation:scrollPulse 2s infinite; }
+/* ── CREDITS ── */
+#credits-overlay{position:fixed;inset:0;z-index:99980;background:#000;display:none;align-items:center;justify-content:center;overflow:hidden}
+#credits-overlay.show{display:flex}
+#credits-scroll{position:absolute;bottom:-100%;width:100%;max-width:700px;text-align:center;padding:2rem;animation:creditsRoll 65s linear forwards}
+@keyframes creditsRoll{from{transform:translateY(0)}to{transform:translateY(calc(-100% - 100vh))}}
+.cr-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.4rem,4vw,2.5rem);font-weight:900;color:var(--accent);text-shadow:var(--glow);letter-spacing:6px;margin-bottom:.5rem}
+.cr-sub{font-size:.75rem;color:var(--dim);letter-spacing:3px;margin-bottom:3rem}
+.cr-section{margin:2.5rem 0}
+.cr-role{font-size:.6rem;color:var(--dim);letter-spacing:4px;text-transform:uppercase;margin-bottom:.4rem}
+.cr-name{font-size:1.2rem;color:var(--text);letter-spacing:2px;margin-bottom:.2rem}
+.cr-name.gold{color:#e8b85b}.cr-name.cyan{color:var(--accent)}.cr-name.red{color:var(--danger)}
+.cr-divider{width:60px;height:1px;background:var(--mid);margin:2rem auto}
+.cr-note{font-size:.7rem;color:var(--dim);line-height:2;letter-spacing:1px}
+#credits-skip{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);font-size:.65rem;letter-spacing:3px;color:var(--dim);cursor:none;border:1px solid var(--mid);padding:.4rem 1.5rem;transition:all .2s;background:transparent;font-family:'Share Tech Mono',monospace;z-index:99981;display:none}
+#credits-skip:hover{color:var(--accent);border-color:var(--accent)}
 
-    /* ── SECRET FEATURE ── */
-    #secret-orb {
-      position:fixed; bottom:2rem; right:2rem; z-index:500;
-      width:48px; height:48px; border-radius:50%;
-      border:1px solid var(--accent); background:transparent;
-      cursor:none; transition:all 0.3s;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 0 0 0 var(--accent);
-      animation:orbPulse 3s infinite;
-    }
-    #secret-orb:hover { background:#00fff720; box-shadow:var(--glow); transform:scale(1.15); }
-    #secret-orb .orb-symbol { font-size:18px; color:var(--accent); pointer-events:none; }
-    #secret-orb .orb-hint {
-      position:absolute; right:56px; bottom:50%; transform:translateY(50%);
-      font-size:0.6rem; letter-spacing:2px; color:var(--dim);
-      white-space:nowrap; opacity:0; transition:opacity 0.3s;
-      pointer-events:none;
-    }
-    #secret-orb:hover .orb-hint { opacity:1; }
-    @keyframes orbPulse { 0%,100%{box-shadow:0 0 0 0 #00fff740} 50%{box-shadow:0 0 0 8px #00fff710} }
+/* ── MEME QUIZ ── */
+#quiz-overlay{position:fixed;inset:0;z-index:99985;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;padding:2rem;text-align:center}
+#quiz-overlay.show{display:flex;animation:fadeUp .5s forwards}
+#quiz-header{font-size:.65rem;letter-spacing:4px;color:var(--dim);text-transform:uppercase}
+#quiz-disclaimer{font-size:.62rem;color:#ff153f80;letter-spacing:2px;line-height:1.7;max-width:500px}
+#quiz-q{font-family:'Orbitron',sans-serif;font-size:clamp(.9rem,2.5vw,1.4rem);font-weight:700;color:var(--text);letter-spacing:2px;max-width:600px;line-height:1.5}
+#quiz-counter{font-size:.65rem;color:var(--dim);letter-spacing:3px}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;width:100%;max-width:500px}
+.quiz-opt{font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:1px;padding:.7rem 1rem;border:1px solid var(--mid);color:var(--text);background:transparent;cursor:none;transition:all .2s;text-align:left}
+.quiz-opt:hover{border-color:var(--accent);color:var(--accent)}
+.quiz-opt.correct{border-color:#00ff41;color:#00ff41;background:#00ff4115}
+.quiz-opt.wrong{border-color:var(--danger);color:var(--danger);background:#ff153f15}
+.quiz-opt.reveal{border-color:#00ff41;color:#00ff41}
+#quiz-feedback{font-size:.75rem;letter-spacing:2px;min-height:1.2em;transition:opacity .3s}
+#quiz-next{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:3px;padding:.5rem 1.5rem;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:none;transition:all .2s;display:none}
+#quiz-next:hover{background:var(--accent);color:var(--bg)}
+#quiz-result{display:none;flex-direction:column;align-items:center;gap:1rem;text-align:center}
+.quiz-score-title{font-family:'Orbitron',sans-serif;font-size:clamp(1rem,3vw,2rem);font-weight:900;color:var(--accent)}
+.quiz-score-msg{font-size:.78rem;color:var(--dim);letter-spacing:2px;line-height:1.8;max-width:500px}
+#quiz-close{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:3px;padding:.5rem 1.5rem;border:1px solid var(--mid);color:var(--dim);background:transparent;cursor:none;transition:all .2s}
+#quiz-close:hover{border-color:var(--accent);color:var(--accent)}
 
-    /* Dragon mode overlay */
-    #dragon-overlay {
-      position:fixed; inset:0; z-index:9990;
-      background:#000; opacity:0; pointer-events:none;
-      display:flex; align-items:center; justify-content:center;
-      flex-direction:column; gap:1rem; transition:opacity 0.4s;
-    }
-    #dragon-overlay.active { opacity:1; pointer-events:all; }
-    #dragon-overlay .dragon-text {
-      font-family:'Orbitron',sans-serif; font-size:clamp(2rem,6vw,5rem);
-      font-weight:900; color:#ff153f; text-shadow:var(--glow-red);
-      text-align:center; letter-spacing:4px;
-      animation:dragonFlicker 0.15s infinite;
-    }
-    #dragon-overlay .dragon-sub { font-size:0.75rem; color:#ff153f80; letter-spacing:4px; }
-    #dragon-overlay .dragon-close { margin-top:2rem; font-size:0.7rem; letter-spacing:3px; color:#ff153f60; cursor:none; border:1px solid #ff153f40; padding:0.5rem 1.5rem; transition:all 0.2s; }
-    #dragon-overlay .dragon-close:hover { color:#ff153f; border-color:#ff153f; }
-    @keyframes dragonFlicker { 0%,100%{opacity:1} 50%{opacity:0.85} }
+/* ── TERMINAL ── */
+#dev-terminal{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);width:min(600px,calc(100vw - 2rem));background:#060e06;border:1px solid var(--accent);z-index:9995;display:none;flex-direction:column;box-shadow:0 0 30px #00fff720;max-height:60vh}
+#dev-terminal.show{display:flex}
+#term-bar{background:#0a1a0a;padding:.5rem 1rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--mid);font-size:.65rem;color:var(--accent);letter-spacing:2px;flex-shrink:0}
+#term-output{padding:.8rem 1rem;font-size:.72rem;line-height:1.8;color:#b5e853;overflow-y:auto;min-height:60px;flex:1}
+#term-input-row{display:flex;align-items:center;padding:.5rem 1rem;border-top:1px solid var(--mid);gap:.5rem;flex-shrink:0}
+#term-prompt{color:var(--accent);font-size:.72rem;white-space:nowrap}
+#term-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:.72rem;cursor:none}
 
-    /* ── SECTION HEADER ── */
-    .section-header { display:flex; align-items:center; gap:1rem; margin-bottom:3rem; }
-    .section-num { font-size:0.7rem; color:var(--accent); letter-spacing:2px; }
-    .section-title { font-family:'Orbitron',sans-serif; font-size:clamp(1.2rem,3vw,2rem); font-weight:700; color:var(--text); letter-spacing:3px; text-transform:uppercase; }
-    .section-line { flex:1; height:1px; background:linear-gradient(to right,var(--mid),transparent); }
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:5rem;left:1rem;z-index:9994;display:flex;flex-direction:column-reverse;gap:.5rem;pointer-events:none;max-width:calc(100vw - 2rem)}
+.toast{background:#0a1a0a;border:1px solid var(--accent);padding:.5rem 1rem;font-size:.65rem;letter-spacing:2px;color:var(--accent);opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(0)}
 
-    /* ── TERMINAL ── */
-    .terminal { background:var(--panel2); border:1px solid var(--mid); border-radius:4px; overflow:hidden; box-shadow:0 4px 40px #00000050; }
-    .terminal-bar { background:var(--panel); padding:0.6rem 1rem; display:flex; align-items:center; gap:0.5rem; border-bottom:1px solid var(--mid); }
-    .t-dot { width:10px; height:10px; border-radius:50%; }
-    .t-dot.red{background:#ff5f57} .t-dot.yellow{background:#febc2e} .t-dot.green{background:#28c840}
-    .terminal-title { margin-left:auto; font-size:0.65rem; color:var(--dim); letter-spacing:1px; }
-    .terminal-body { padding:1.5rem; font-size:0.85rem; line-height:1.9; }
-    .t-prompt{color:var(--accent)} .t-comment{color:var(--mid)} .t-key{color:var(--danger)} .t-val{color:#b5e853} .t-str{color:#e8b85b}
-    .t-block{margin:0.5rem 0 0.5rem 1rem} .t-line{display:flex;gap:0.5rem;flex-wrap:wrap}
+/* ── SECTION HEADERS ── */
+.section-header{display:flex;align-items:center;gap:1rem;margin-bottom:3rem}
+.section-num{font-size:.7rem;color:var(--accent);letter-spacing:2px}
+.section-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.1rem,3vw,2rem);font-weight:700;color:var(--text);letter-spacing:3px;text-transform:uppercase}
+.section-line{flex:1;height:1px;background:linear-gradient(to right,var(--mid),transparent)}
 
-    /* ── PROJECTS ── */
-    .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
-    .project-card { background:var(--panel2); border:1px solid var(--mid); padding:1.8rem; position:relative; overflow:hidden; transition:border-color 0.3s,transform 0.3s; }
-    .project-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent); transform:scaleY(0); transform-origin:top; transition:transform 0.3s; }
-    .project-card:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 8px 30px #00fff715; }
-    .project-card:hover::before { transform:scaleY(1); }
-    .project-card.red-accent::before { background:var(--danger); }
-    .project-card.red-accent:hover { border-color:var(--danger); box-shadow:0 8px 30px #ff153f15; }
-    .project-icon{font-size:1.8rem;margin-bottom:1rem}
-    .project-name{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:0.3rem;letter-spacing:1px}
-    .project-version{font-size:0.65rem;color:var(--accent);letter-spacing:2px}
-    .project-desc{font-size:0.78rem;color:var(--dim);line-height:1.7;margin:1rem 0}
-    .project-badges{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.2rem}
-    .badge{font-size:0.6rem;letter-spacing:1px;padding:0.2rem 0.6rem;border:1px solid var(--mid);color:var(--dim);text-transform:uppercase}
-    .badge.cyan{border-color:var(--accent);color:var(--accent)} .badge.red{border-color:var(--danger);color:var(--danger)}
-    .project-links{display:flex;gap:0.8rem}
-    .proj-link{font-size:0.68rem;color:var(--accent);text-decoration:none;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid transparent;transition:border-color 0.2s;cursor:none}
-    .proj-link:hover{border-color:var(--accent)} .proj-link.red{color:var(--danger)} .proj-link.red:hover{border-color:var(--danger)}
+/* ── TERMINAL BLOCK ── */
+.terminal{background:var(--panel2);border:1px solid var(--mid);border-radius:4px;overflow:hidden}
+.terminal-bar{background:var(--panel);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--mid)}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.t-dot.red{background:#ff5f57}.t-dot.yellow{background:#febc2e}.t-dot.green{background:#28c840}
+.terminal-title{margin-left:auto;font-size:.65rem;color:var(--dim);letter-spacing:1px}
+.terminal-body{padding:1.5rem;font-size:.82rem;line-height:1.9;overflow-x:auto}
+.t-prompt{color:var(--accent)}.t-comment{color:var(--mid)}.t-key{color:var(--danger)}.t-val{color:#b5e853}.t-str{color:#e8b85b}
+.t-block{margin:.5rem 0 .5rem 1rem}.t-line{display:flex;gap:.5rem;flex-wrap:wrap}
 
-    /* ── STACK ── */
-    .stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem}
-    .stack-group-title{font-size:0.65rem;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--mid)}
-    .stack-items{display:flex;flex-wrap:wrap;gap:0.4rem}
-    .stack-item{font-size:0.72rem;padding:0.3rem 0.8rem;background:var(--panel);border:1px solid var(--mid);color:var(--text);letter-spacing:1px;transition:border-color 0.2s,color 0.2s}
-    .stack-item:hover{border-color:var(--accent);color:var(--accent)}
-    .stack-item.learning{border-style:dashed;color:var(--dim)}
-    .stack-item.chaotic{border-color:var(--crimson);color:#ff153f90;font-size:0.65rem}
+/* ── PROJECTS ── */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+.project-card{background:var(--panel2);border:1px solid var(--mid);padding:1.8rem;position:relative;overflow:hidden;transition:border-color .3s,transform .3s}
+.project-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent);transform:scaleY(0);transform-origin:top;transition:transform .3s}
+.project-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 30px #00fff715}
+.project-card:hover::before{transform:scaleY(1)}
+.project-card.red-accent::before{background:var(--danger)}.project-card.red-accent:hover{border-color:var(--danger);box-shadow:0 8px 30px #ff153f15}
+.project-card.glow-highlight{border-color:var(--accent)!important;box-shadow:0 0 20px var(--accent)!important;transition:none!important}
+.project-icon{font-size:1.8rem;margin-bottom:1rem}
+.project-name{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.3rem;letter-spacing:1px}
+.project-version{font-size:.65rem;color:var(--accent);letter-spacing:2px}
+.project-desc{font-size:.78rem;color:var(--dim);line-height:1.7;margin:1rem 0}
+.project-badges{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.2rem}
+.badge{font-size:.6rem;letter-spacing:1px;padding:.2rem .6rem;border:1px solid var(--mid);color:var(--dim);text-transform:uppercase}
+.badge.cyan{border-color:var(--accent);color:var(--accent)}.badge.red{border-color:var(--danger);color:var(--danger)}
+.project-links{display:flex;gap:.8rem;flex-wrap:wrap}
+.proj-link{font-size:.68rem;color:var(--accent);text-decoration:none;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid transparent;transition:border-color .2s;cursor:none}
+.proj-link:hover{border-color:var(--accent)}.proj-link.red{color:var(--danger)}.proj-link.red:hover{border-color:var(--danger)}
 
-    /* ── GAMING ── */
-    .gaming-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
-    .game-card{background:var(--panel2);border:1px solid var(--mid);padding:1.5rem;transition:border-color 0.3s}
-    .game-header{display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:0.8rem;border-bottom:1px solid var(--mid)}
-    .game-icon{font-size:1.4rem}
-    .game-title{font-family:'Orbitron',sans-serif;font-size:0.8rem;font-weight:700;color:var(--accent);letter-spacing:2px}
-    .game-subtitle{font-size:0.65rem;color:var(--dim);margin-top:0.15rem}
-    .game-stat{display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ffffff06;font-size:0.72rem}
-    .game-stat:last-child{border-bottom:none}
-    .stat-key{color:var(--dim)} .stat-val{color:var(--text);text-align:right}
-    .stat-val.cyan{color:var(--accent)} .stat-val.red{color:var(--danger)} .stat-val.gold{color:#e8b85b}
-    .mlbb-tabs{display:flex;margin-bottom:1rem}
-    .mlbb-tab{flex:1;padding:0.4rem;font-size:0.65rem;letter-spacing:1px;text-align:center;cursor:none;border:1px solid var(--mid);color:var(--dim);background:transparent;transition:all 0.2s;font-family:'Share Tech Mono',monospace}
-    .mlbb-tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
-    .mlbb-panel{display:none} .mlbb-panel.active{display:block}
+/* ── STACK ── */
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem}
+.stack-group-title{font-size:.65rem;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:1px solid var(--mid)}
+.stack-items{display:flex;flex-wrap:wrap;gap:.4rem}
+.stack-item{font-size:.72rem;padding:.3rem .8rem;background:var(--panel);border:1px solid var(--mid);color:var(--text);letter-spacing:1px;transition:border-color .2s,color .2s}
+.stack-item:hover{border-color:var(--accent);color:var(--accent)}
+.stack-item.learning{border-style:dashed;color:var(--dim)}
+.stack-item.chaotic{border-color:var(--crimson);color:#ff153f90;font-size:.65rem}
 
-    /* ── CONTACT ── */
-    .socials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
-    .social-card{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:var(--panel2);border:1px solid var(--mid);text-decoration:none;transition:border-color 0.2s,transform 0.2s;position:relative;overflow:hidden;cursor:none}
-    .social-card::after{content:'→';position:absolute;right:1rem;color:var(--dim);font-size:0.8rem;transition:color 0.2s,right 0.2s}
-    .social-card:hover{border-color:var(--accent);transform:translateX(4px)}
-    .social-card:hover::after{color:var(--accent);right:0.7rem}
-    .social-icon{font-size:1.2rem}
-    .social-label{font-size:0.65rem;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
-    .social-handle{font-size:0.85rem;color:var(--text);margin-top:0.1rem}
+/* ── GAMING ── */
+.gaming-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+.game-card{background:var(--panel2);border:1px solid var(--mid);padding:1.5rem}
+.game-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--mid)}
+.game-icon{font-size:1.4rem}
+.game-title{font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:var(--accent);letter-spacing:2px}
+.game-subtitle{font-size:.65rem;color:var(--dim);margin-top:.15rem}
+.game-stat{display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid #ffffff06;font-size:.72rem}
+.game-stat:last-child{border-bottom:none}
+.stat-key{color:var(--dim)}.stat-val{color:var(--text);text-align:right}
+.stat-val.cyan{color:var(--accent)}.stat-val.red{color:var(--danger)}.stat-val.gold{color:#e8b85b}
+.mlbb-tabs{display:flex;margin-bottom:1rem}
+.mlbb-tab{flex:1;padding:.4rem;font-size:.65rem;letter-spacing:1px;text-align:center;cursor:none;border:1px solid var(--mid);color:var(--dim);background:transparent;transition:all .2s;font-family:'Share Tech Mono',monospace}
+.mlbb-tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.mlbb-panel{display:none}.mlbb-panel.active{display:block}
 
-    /* ── FOOTER ── */
-    footer{border-top:1px solid var(--mid);padding:3rem;text-align:center;font-size:0.72rem;color:var(--dim);line-height:2}
-    footer .footer-logo{font-family:'Orbitron',sans-serif;font-size:0.9rem;color:var(--accent);text-shadow:var(--glow);letter-spacing:3px;display:block;margin-bottom:0.5rem}
-    footer a{color:var(--accent);text-decoration:none}
-    footer a:hover{text-decoration:underline}
+/* ── CONTACT ── */
+.socials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.social-card{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:var(--panel2);border:1px solid var(--mid);text-decoration:none;transition:border-color .2s,transform .2s;position:relative;cursor:none}
+.social-card::after{content:'→';position:absolute;right:1rem;color:var(--dim);font-size:.8rem;transition:color .2s,right .2s}
+.social-card:hover{border-color:var(--accent);transform:translateX(4px)}
+.social-card:hover::after{color:var(--accent);right:.7rem}
+.social-icon{font-size:1.2rem}.social-label{font-size:.65rem;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+.social-handle{font-size:.82rem;color:var(--text);margin-top:.1rem;word-break:break-all}
 
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes blink   {0%,100%{opacity:1}50%{opacity:0}}
-    @keyframes scrollPulse{0%,100%{opacity:0.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.2)}}
-    .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s,transform 0.7s}
-    .reveal.visible{opacity:1;transform:translateY(0)}
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--mid);padding:3rem;text-align:center;font-size:.72rem;color:var(--dim);line-height:2}
+footer .footer-logo{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--accent);text-shadow:var(--glow);letter-spacing:3px;display:block;margin-bottom:.5rem}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
 
-    @media(max-width:768px){nav{padding:1rem 1.5rem}section{padding:4rem 1.5rem}#hero{padding:0 1.5rem}footer{padding:2rem 1.5rem}}
-    @media(max-width:480px){.nav-links{display:none}}
-  </style>
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.2)}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){section{padding:4rem 1.5rem}#hero{padding:0 1.5rem}footer{padding:2rem 1.5rem}}
+@media(max-width:520px){.projects-grid,.socials-grid,.gaming-grid,.stack-grid,.quiz-options{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div id="loading">
-  <div id="load-symbol">◌</div>
-  <div id="load-text">Initializing . . .</div>
-</div>
-
-<!-- CURSOR -->
+<div id="loading"><div id="load-symbol">◌</div><div id="load-text">Initializing . . .</div></div>
 <div id="cursor">◌</div>
 <canvas id="trail-canvas"></canvas>
+<canvas id="click-canvas"></canvas>
 <canvas id="matrix-canvas"></canvas>
+<div id="flash-overlay"></div>
+<div id="zzz-container"></div>
 
-<!-- KONAMI BANNER -->
 <div id="konami-banner">// MATRIX PROTOCOL ACTIVATED &nbsp;·&nbsp; ↑↑↓↓←→←→BA &nbsp;·&nbsp; KONAMI MODE ENGAGED //</div>
-
-<!-- RAIN MODE TOGGLE (shows only when Konami active) -->
 <div id="rain-toggle">
   <button class="rtbtn active clickable" id="btn-bin" onclick="setRainMode('binary')">01 Binary</button>
   <button class="rtbtn clickable" id="btn-jap" onclick="setRainMode('japanese')">カナ Katakana</button>
 </div>
+<button id="ach-btn" class="clickable" onclick="toggleAchPanel()">🏆</button>
+<div id="ach-modal"><div class="ach-header">// ACHIEVEMENTS //</div><div id="ach-list"></div></div>
 
-<!-- SECRET ORB -->
-<div id="secret-orb" class="clickable" onclick="triggerDragon()">
-  <span class="orb-symbol">龍</span>
-  <span class="orb-hint">// click me</span>
+<!-- ORB -->
+<div id="secret-orb" class="clickable" onclick="startGame()">
+  <span class="orb-symbol">龍</span><span class="orb-hint">// click me</span>
 </div>
 
-<!-- DRAGON OVERLAY -->
+<!-- GAME OVERLAY -->
 <div id="dragon-overlay">
-  <div class="dragon-text">怠竜 AWAKENS</div>
-  <div class="dragon-sub">// THE LAZY DRAGON HAS ENTERED THE CHAT //</div>
-  <div class="dragon-close clickable" onclick="closeDragon()">[ ESC · CLOSE ]</div>
+  <div id="game-title">⚔ LAZY DRAGON GAUNTLET ⚔</div>
+  <div id="game-sub">SURVIVE 10s · 3 LIVES · WASD / D-PAD</div>
+  <div class="game-wrap">
+    <canvas id="game-canvas" width="340" height="420"></canvas>
+    <div id="game-select-screen" class="game-screen show">
+      <div class="gs-title" style="color:var(--accent)">CHOOSE<br>YOUR FATE</div>
+      <div class="gs-sub">Two games. One pride.<br>D-Pad / swipe on canvas for mobile.</div>
+      <div class="gs-btn-row">
+        <button class="gs-btn red clickable" onclick="selectGame('dragon')">⚔ DRAGON<br><span style="font-size:.58rem;opacity:.7">Dodge fireballs · 10s</span></button>
+        <button class="gs-btn clickable" onclick="selectGame('snake')">🐍 SNAKE<br><span style="font-size:.58rem;opacity:.7">Eat food · Score 80 to win</span></button>
+      </div>
+    </div>
+    <div id="game-over-screen" class="game-screen">
+      <div class="gs-title" style="color:var(--danger)">YOU DIED</div>
+      <div class="gs-sub" id="go-msg"></div>
+      <div class="gs-btn-row">
+        <button class="gs-btn red clickable" onclick="restartCurrent()">[ TRY AGAIN ]</button>
+        <button class="gs-btn clickable" onclick="showSelectScreen()">[ BACK ]</button>
+      </div>
+    </div>
+    <div id="game-win-screen" class="game-screen">
+      <div class="gs-title" style="color:var(--accent)">YOU WIN!</div>
+      <div class="gs-sub">Brave adventurer...<br>your prize awaits.</div>
+      <div id="win-bar-wrap" style="width:80%;background:#1a1a1a;border:1px solid var(--accent);height:8px;margin-top:.5rem"><div id="win-bar" style="height:100%;background:var(--accent);width:0%;transition:width 3s linear"></div></div>
+      <div id="win-bar-text" style="font-size:.6rem;letter-spacing:2px;color:var(--dim);margin-top:.3rem">LOADING PRIZE...</div>
+    </div>
+  </div>
+  <div id="game-dpad">
+    <div></div>
+    <button onpointerdown="dpadPress('up')"    onpointerup="dpadRelease('up')"    ontouchstart="dpadPress('up')"    ontouchend="dpadRelease('up')">▲</button>
+    <div></div>
+    <button onpointerdown="dpadPress('left')"  onpointerup="dpadRelease('left')"  ontouchstart="dpadPress('left')"  ontouchend="dpadRelease('left')">◀</button>
+    <button onpointerdown="dpadPress('down')"  onpointerup="dpadRelease('down')"  ontouchstart="dpadPress('down')"  ontouchend="dpadRelease('down')">▼</button>
+    <button onpointerdown="dpadPress('right')" onpointerup="dpadRelease('right')" ontouchstart="dpadPress('right')" ontouchend="dpadRelease('right')">▶</button>
+  </div>
+  <button id="game-close" class="clickable" onclick="closeGame()">[ × CLOSE ]</button>
 </div>
+
+<!-- RICK SCREEN -->
+<div id="rick-screen">
+  <div id="rick-title">🎉 CONGRATULATIONS BRAVE ADVENTURER 🎉<br><span style="font-family:'Share Tech Mono';font-size:.72rem;letter-spacing:2px">// your prize is loading //</span></div>
+  <div id="rick-count">3</div>
+  <div id="rick-msg">Preparing your reward...</div>
+  <a id="rick-prize-btn" href="https://www.youtube.com/watch?v=RrESvSRNpeo" target="_blank" rel="noopener" class="clickable">🎵 CLAIM YOUR PRIZE →</a>
+  <a id="rick-close" href="#" class="clickable" onclick="closeRick();return false">[ i knew it. close. ]</a>
+</div>
+
+<!-- CREDITS -->
+<div id="credits-overlay">
+  <div id="credits-scroll">
+    <div class="cr-title">怠竜 TEARYŪ</div>
+    <div class="cr-sub">// a film by The Lazy Dragon //</div>
+    <div class="cr-divider"></div>
+    <div class="cr-section"><div class="cr-role">Written · Directed · Coded · Designed by</div><div class="cr-name gold">怠竜 TEARYŪ</div><div class="cr-name gold">THE LAZY DRAGON</div></div>
+    <div class="cr-divider"></div>
+    <div class="cr-section"><div class="cr-role">Produced at</div><div class="cr-name">3:00 AM – 4:00 AM</div><div class="cr-note">multiple nights<br>no sleep was harmed<br>(sleep was absolutely harmed)</div></div>
+    <div class="cr-divider"></div>
+    <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">Man United FC</div><div class="cr-note">for the ongoing emotional damage<br>GGMU regardless. Forever red.</div></div>
+    <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">Lionel Messi</div><div class="cr-note">the undisputed GOAT<br>also Ronaldo defied nature itself<br>two legends. one argument.</div></div>
+    <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">LeBron James</div><div class="cr-note">the real deal<br>MJ is still GOAT tho<br>6-0. not up for debate.</div></div>
+    <div class="cr-divider"></div>
+    <div class="cr-section"><div class="cr-role">Debugging Assistant</div><div class="cr-name" style="color:var(--dim)">Claude (Anthropic)</div><div class="cr-note">claims 40% of the credit<br>deserves approximately 0%<br>genuinely helpful though.<br>(don't tell it i said that)</div></div>
+    <div class="cr-divider"></div>
+    <div class="cr-section"><div class="cr-role">No Thanks Whatsoever To</div><div class="cr-name red">Mobile Legends: Bang Bang</div><div class="cr-note">for professionally worsening my anger issues<br>95.2% Alucard WR and STILL tilted<br>roam diff every single game<br>i need therapy tbh</div></div>
+    <div class="cr-section"><div class="cr-role">No Thanks To</div><div class="cr-name red">Football Manager</div><div class="cr-note">you know what you did<br>the 97th minute goal<br>i will never forgive you</div></div>
+    <div class="cr-section"><div class="cr-role">No Thanks To</div><div class="cr-name red">Oil Money Clubs</div><div class="cr-note">you know who you are<br>GGMU</div></div>
+    <div class="cr-section"><div class="cr-role">No Thanks To</div><div class="cr-name red">Sleep</div><div class="cr-note">for not happening<br>not even once</div></div>
+    <div class="cr-divider"></div>
+    <div class="cr-section"><div class="cr-role">Built With</div><div class="cr-note">HTML · CSS · JavaScript<br>Node.js · React · Python<br>Zero frameworks. Zero installs.<br>One file. Always.</div></div>
+    <div class="cr-divider"></div>
+    <div class="cr-section"><div class="cr-role">You Watched The Whole Credits</div><div class="cr-name" style="color:var(--dim)">Respect actually.</div><div class="cr-note">you have too much time<br>same honestly<br>take the quiz.</div></div>
+    <div class="cr-divider"></div>
+    <div class="cr-section" style="margin-bottom:5rem"><div class="cr-title" style="font-size:2rem">怠竜</div><div class="cr-sub">No idea how I got here.<br>Building things anyway.</div></div>
+  </div>
+</div>
+<button id="credits-skip" class="clickable" onclick="closeCredits()">[ skip credits ]</button>
+
+<!-- MEME QUIZ -->
+<div id="quiz-overlay">
+  <div id="quiz-header">// THE DRAGON'S FINAL TEST //</div>
+  <div id="quiz-disclaimer">I hate new brainrot. This is REAL internet.<br>Old school or get out. Also follow me for ragebait tips.</div>
+  <div id="quiz-counter">QUESTION 1 / 8</div>
+  <div id="quiz-q">What is 9 + 10?</div>
+  <div class="quiz-options" id="quiz-opts"></div>
+  <div id="quiz-feedback"></div>
+  <button id="quiz-next" class="clickable" onclick="quizNext()">[ NEXT → ]</button>
+  <div id="quiz-result">
+    <div class="quiz-score-title" id="quiz-score-title"></div>
+    <div class="quiz-score-msg" id="quiz-score-msg"></div>
+    <button id="quiz-close" class="clickable" onclick="closeQuiz()">[ CLOSE ]</button>
+  </div>
+</div>
+
+<!-- TERMINAL -->
+<div id="dev-terminal">
+  <div id="term-bar"><span>怠竜 TERMINAL · ~ to toggle · ESC to close</span><span class="clickable" style="cursor:none;color:var(--dim)" onclick="closeTerm()">[ × ]</span></div>
+  <div id="term-output"></div>
+  <div id="term-input-row"><span id="term-prompt">tearyu@lazyd:~$&nbsp;</span><input id="term-input" type="text" autocomplete="off" spellcheck="false" placeholder="type 'help'"></div>
+</div>
+<div id="toast-container"></div>
 
 <!-- NAV -->
 <nav id="main-nav">
@@ -354,36 +407,22 @@
   </ul>
 </nav>
 
-<!-- HERO -->
 <section id="hero">
   <div class="hero-bg-grid"></div>
   <div class="hero-tag">// BSc IT Student · Biratnagar, Nepal 🇳🇵</div>
-  <div class="hero-name">
-    <span class="kanji">怠竜 TEARYŪ</span>
-    <span class="glitch" data-text="THE LAZY DRAGON">THE LAZY DRAGON</span>
-  </div>
-  <div class="hero-subtitle">
-    <span id="typewriter"></span><span class="cursor-blink"></span>
-  </div>
+  <div class="hero-name"><span class="kanji">怠竜 TEARYŪ</span><span class="glitch" data-text="THE LAZY DRAGON">THE LAZY DRAGON</span></div>
+  <div class="hero-subtitle"><span id="typewriter"></span><span class="cursor-blink"></span></div>
   <div class="hero-cta">
     <a href="#projects" class="btn clickable">View Projects</a>
-    <a href="https://github.com/The-Lazy-Dragon" target="_blank" class="btn danger clickable">GitHub ↗</a>
+    <a href="https://github.com/The-Lazy-Dragon" target="_blank" rel="noopener" class="btn danger clickable">GitHub ↗</a>
   </div>
   <div class="hero-scroll"><div class="scroll-line"></div>SCROLL</div>
 </section>
 
-<!-- ABOUT -->
 <section id="about">
-  <div class="section-header reveal">
-    <span class="section-num">01 //</span>
-    <h2 class="section-title">Whoami</h2>
-    <div class="section-line"></div>
-  </div>
+  <div class="section-header reveal"><span class="section-num">01 //</span><h2 class="section-title">Whoami</h2><div class="section-line"></div></div>
   <div class="terminal reveal">
-    <div class="terminal-bar">
-      <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
-      <span class="terminal-title">tearyu@lazyd:~$ identity.conf</span>
-    </div>
+    <div class="terminal-bar"><div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div><span class="terminal-title">tearyu@lazyd:~$</span></div>
     <div class="terminal-body">
       <div class="t-line"><span class="t-prompt">$</span><span> cat identity.yaml</span></div><br>
       <div class="t-block">
@@ -392,130 +431,72 @@
         <div><span class="t-key">roots</span>:      <span class="t-str">"Nepali 🇳🇵 · Filipino/Spanish/Chinese 🇵🇭"</span></div>
         <div><span class="t-key">studying</span>:   <span class="t-str">"BSc (Hons) IT @ IIC · Itahari International College"</span></div>
         <div><span class="t-key">stack</span>:      <span class="t-str">["HTML","CSS","JS","Node","React","Python"]</span></div>
-        <div><span class="t-key">exploring</span>:  <span class="t-str">["Unreal Engine","Unity","Game Dev"]</span></div>
-        <div><span class="t-key">build_hours</span>:<span class="t-str"> "03:00 – 04:00"</span>  <span class="t-comment"># prime time</span></div>
         <div><span class="t-key">philosophy</span>: <span class="t-str">"No frameworks. No installs. One file."</span></div>
-        <div><span class="t-key">sleep</span>:      <span class="t-val">false</span>  <span class="t-comment"># a suggestion, mostly ignored</span></div>
-      </div><br>
-      <div class="t-line"><span class="t-prompt">$</span><span> echo $INTERESTS</span></div>
-      <div class="t-block"><span class="t-str">"Turn-Based RPGs · Zombie Movies · Isekai Anime · Basketball · Football · MLBB · Rimworld · Project Zomboid · Valheim"</span></div><br>
-      <div class="t-line"><span class="t-prompt">$</span><span> cat /etc/allegiances</span></div>
-      <div class="t-block">
-        <div><span class="t-comment"># ⚽ Football  </span>→ <span class="t-str">Man United (GGMU 🔴) · Messi is GOAT · Ronaldo is THE MAN</span></div>
-        <div><span class="t-comment"># 🏀 Basketball</span>→ <span class="t-str">LA Lakers · Chicago Bulls · MJ is GOAT · LeBron is the real deal</span></div>
+        <div><span class="t-key">sleep</span>:      <span class="t-val">false</span>  <span class="t-comment"># suggestion. mostly ignored.</span></div>
       </div><br>
       <div class="t-comment"># No idea how I got here... but I'm building things anyway.</div>
     </div>
   </div>
 </section>
 
-<!-- PROJECTS -->
 <section id="projects">
-  <div class="section-header reveal">
-    <span class="section-num">02 //</span>
-    <h2 class="section-title">Projects</h2>
-    <div class="section-line"></div>
-  </div>
+  <div class="section-header reveal"><span class="section-num">02 //</span><h2 class="section-title">Projects</h2><div class="section-line"></div></div>
   <div class="projects-grid">
-    <div class="project-card reveal">
-      <div class="project-icon">⚓</div>
-      <div class="project-name">NavalStrike</div>
-      <div class="project-version">v1.0.0</div>
-      <div class="project-desc">Battleship. But neon. But with 25 ship classes, 35 achievements, a Konami code, 5 procedural audio themes, and hard AI with full threat scoring. One <code>.html</code> file.</div>
-      <div class="project-badges">
-        <span class="badge cyan">Pure HTML</span><span class="badge">No Framework</span>
-        <span class="badge">Web Audio API</span><span class="badge red">35 Achievements</span>
-      </div>
+    <div class="project-card reveal" id="card-naval">
+      <div class="project-icon">⚓</div><div class="project-name">NavalStrike</div><div class="project-version">v1.0.0</div>
+      <div class="project-desc">Battleship. But neon. 25 ship classes, 35 achievements, Konami code, 5 procedural audio themes, hard AI. One <code>.html</code> file.</div>
+      <div class="project-badges"><span class="badge cyan">Pure HTML</span><span class="badge">No Framework</span><span class="badge">Web Audio API</span><span class="badge red">35 Achievements</span></div>
       <div class="project-links">
-        <a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" class="proj-link clickable">▶ Play Live</a>
-        <a href="https://github.com/The-Lazy-Dragon/NavalStrike" target="_blank" class="proj-link clickable">GitHub ↗</a>
+        <a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" rel="noopener" class="proj-link clickable">▶ Play Live</a>
+        <a href="https://github.com/The-Lazy-Dragon/NavalStrike" target="_blank" rel="noopener" class="proj-link clickable">GitHub ↗</a>
       </div>
     </div>
-    <div class="project-card red-accent reveal">
-      <div class="project-icon">🎮</div>
-      <div class="project-name">TicTacToe</div>
-      <div class="project-version">The Neon One</div>
-      <div class="project-desc">TicTacToe. But with 35 achievements, a built-in terminal console, a Konami code, and an unbeatable Minimax AI. Also one <code>.html</code> file.</div>
-      <div class="project-badges">
-        <span class="badge cyan">Pure HTML</span><span class="badge">Minimax AI</span><span class="badge red">Dev Console</span>
-      </div>
+    <div class="project-card red-accent reveal" id="card-ttt">
+      <div class="project-icon">🎮</div><div class="project-name">TicTacToe</div><div class="project-version">The Neon One</div>
+      <div class="project-desc">TicTacToe. But neon. 35 achievements, dev console, Konami code, unbeatable Minimax AI. One <code>.html</code> file.</div>
+      <div class="project-badges"><span class="badge cyan">Pure HTML</span><span class="badge">Minimax AI</span><span class="badge red">Dev Console</span></div>
       <div class="project-links">
-        <a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" class="proj-link clickable">▶ Play Live</a>
-        <a href="https://github.com/The-Lazy-Dragon/lazy-dragons-tictactoe" target="_blank" class="proj-link clickable">GitHub ↗</a>
+        <a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" rel="noopener" class="proj-link clickable">▶ Play Live</a>
+        <a href="https://github.com/The-Lazy-Dragon/lazy-dragons-tictactoe" target="_blank" rel="noopener" class="proj-link clickable">GitHub ↗</a>
       </div>
     </div>
-    <div class="project-card reveal">
-      <div class="project-icon">🎯</div>
-      <div class="project-name">Deadshot Crosshair</div>
-      <div class="project-version">v1.1.2</div>
-      <div class="project-desc">Chrome extension for deadshot.io. 15+ crosshair shapes, psychedelic mode, live FPS/ping HUD, key tracker. No Tampermonkey. No BS.</div>
-      <div class="project-badges">
-        <span class="badge cyan">Chrome Extension</span><span class="badge">15+ Shapes</span><span class="badge red">Psychedelic Mode</span>
-      </div>
-      <div class="project-links">
-        <a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" class="proj-link clickable">GitHub ↗</a>
-      </div>
+    <div class="project-card reveal" id="card-cross">
+      <div class="project-icon">🎯</div><div class="project-name">Deadshot Crosshair</div><div class="project-version">v1.1.2</div>
+      <div class="project-desc">Chrome extension for deadshot.io. 15+ crosshair shapes, psychedelic mode, FPS/ping HUD, key tracker. No Tampermonkey. No BS.</div>
+      <div class="project-badges"><span class="badge cyan">Chrome Extension</span><span class="badge">15+ Shapes</span><span class="badge red">Psychedelic Mode</span></div>
+      <div class="project-links"><a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" rel="noopener" class="proj-link clickable">GitHub ↗</a></div>
     </div>
   </div>
 </section>
 
-<!-- STACK -->
 <section id="stack">
-  <div class="section-header reveal">
-    <span class="section-num">03 //</span>
-    <h2 class="section-title">Stack</h2>
-    <div class="section-line"></div>
-  </div>
+  <div class="section-header reveal"><span class="section-num">03 //</span><h2 class="section-title">Stack</h2><div class="section-line"></div></div>
   <div class="stack-grid reveal">
     <div class="stack-group">
       <div class="stack-group-title">// Comfortable With</div>
-      <div class="stack-items">
-        <div class="stack-item">HTML5</div><div class="stack-item">CSS3</div>
-        <div class="stack-item">JavaScript</div><div class="stack-item">Node.js</div>
-        <div class="stack-item">React</div><div class="stack-item">Python</div>
-        <div class="stack-item">Web Audio API</div><div class="stack-item">Chrome Extensions</div>
-      </div>
+      <div class="stack-items"><div class="stack-item">HTML5</div><div class="stack-item">CSS3</div><div class="stack-item">JavaScript</div><div class="stack-item">Node.js</div><div class="stack-item">React</div><div class="stack-item">Python</div><div class="stack-item">Web Audio API</div><div class="stack-item">Chrome Extensions</div></div>
     </div>
     <div class="stack-group">
       <div class="stack-group-title">// Currently Learning</div>
-      <div class="stack-items">
-        <div class="stack-item learning">Unreal Engine</div>
-        <div class="stack-item learning">Unity</div>
-        <div class="stack-item learning">Game Dev</div>
-      </div><br>
+      <div class="stack-items"><div class="stack-item learning">Unreal Engine</div><div class="stack-item learning">Unity</div><div class="stack-item learning">Game Dev</div></div><br>
       <div class="stack-group-title">// Chaotic Good</div>
-      <div class="stack-items">
-        <div class="stack-item chaotic">DLL Manipulation</div>
-        <div class="stack-item chaotic">CSV Wrangling</div>
-        <div class="stack-item chaotic">3AM Judgement</div>
-      </div>
+      <div class="stack-items"><div class="stack-item chaotic">DLL Manipulation</div><div class="stack-item chaotic">CSV Wrangling</div><div class="stack-item chaotic">3AM Judgement</div></div>
     </div>
   </div>
 </section>
 
-<!-- GAMING -->
 <section id="gaming">
-  <div class="section-header reveal">
-    <span class="section-num">04 //</span>
-    <h2 class="section-title">Gaming IDs</h2>
-    <div class="section-line"></div>
-  </div>
+  <div class="section-header reveal"><span class="section-num">04 //</span><h2 class="section-title">Gaming IDs</h2><div class="section-line"></div></div>
   <div class="gaming-grid">
     <div class="game-card reveal">
-      <div class="game-header">
-        <div class="game-icon">📱</div>
-        <div><div class="game-title">Mobile Legends</div><div class="game-subtitle">Bang Bang · Roam Main</div></div>
-      </div>
-      <div class="mlbb-tabs">
-        <button class="mlbb-tab active clickable" onclick="switchTab(0)">怠竜 Taeryū (Main)</button>
-        <button class="mlbb-tab clickable" onclick="switchTab(1)">龍神 RyŪjin (Old)</button>
-      </div>
+      <div class="game-header"><div class="game-icon">📱</div><div><div class="game-title">Mobile Legends</div><div class="game-subtitle">Bang Bang · Roam Main</div></div></div>
+      <div class="mlbb-tabs"><button class="mlbb-tab active clickable" onclick="switchTab(0)">怠竜 Taeryū (Main)</button><button class="mlbb-tab clickable" onclick="switchTab(1)">龍神 RyŪjin (Old)</button></div>
       <div class="mlbb-panel active" id="tab0">
         <div class="game-stat"><span class="stat-key">IGN</span><span class="stat-val cyan">怠竜Taeryū</span></div>
         <div class="game-stat"><span class="stat-key">ID</span><span class="stat-val">1680765500 (18127)</span></div>
         <div class="game-stat"><span class="stat-key">Server</span><span class="stat-val">PH / East 🇵🇭</span></div>
         <div class="game-stat"><span class="stat-key">Current Rank</span><span class="stat-val gold">Mythic ⭐50</span></div>
-        <div class="game-stat"><span class="stat-key">Peak Rank</span><span class="stat-val gold">Mythic ⭐52</span></div>
+        <div class="game-stat"><span class="stat-key">Peak</span><span class="stat-val gold">Mythic ⭐52</span></div>
         <div class="game-stat"><span class="stat-key">Role</span><span class="stat-val cyan">Roam Main 🛡️</span></div>
         <div class="game-stat"><span class="stat-key">Matches</span><span class="stat-val">1,369</span></div>
       </div>
@@ -526,393 +507,534 @@
         <div class="game-stat"><span class="stat-key">Rank</span><span class="stat-val">Epic</span></div>
         <div class="game-stat"><span class="stat-key">Status</span><span class="stat-val red">Retired</span></div>
         <div class="game-stat"><span class="stat-key">Legacy</span><span class="stat-val gold">Alucard · 95.2% WR 🩸</span></div>
-        <div class="game-stat"><span class="stat-key">Matches</span><span class="stat-val">49</span></div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div style="display:flex;flex-direction:column;gap:1rem">
       <div class="game-card reveal">
-        <div class="game-header">
-          <div class="game-icon">⚔️</div>
-          <div><div class="game-title">Clash Royale</div><div class="game-subtitle">Supercell ID</div></div>
-        </div>
+        <div class="game-header"><div class="game-icon">⚔️</div><div><div class="game-title">Clash Royale</div><div class="game-subtitle">Supercell ID</div></div></div>
         <div class="game-stat"><span class="stat-key">Supercell ID</span><span class="stat-val cyan">RedDragonZx</span></div>
         <div class="game-stat"><span class="stat-key">Clan</span><span class="stat-val">TheLazyDragon</span></div>
       </div>
       <div class="game-card reveal">
-        <div class="game-header">
-          <div class="game-icon">🎮</div>
-          <div><div class="game-title">Also Playing</div><div class="game-subtitle">When not coding at 3AM</div></div>
-        </div>
-        <div class="game-stat"><span class="stat-key">PC</span><span class="stat-val">Rimworld · Project Zomboid · Valheim</span></div>
-        <div class="game-stat"><span class="stat-key">Mobile</span><span class="stat-val">MLBB · Hoop Land</span></div>
+        <div class="game-header"><div class="game-icon">🎮</div><div><div class="game-title">Also Playing</div><div class="game-subtitle">When not coding at 3AM</div></div></div>
+        <div class="game-stat"><span class="stat-key">PC</span><span class="stat-val">Rimworld · Project Zomboid · Kenshi</span></div>
+        <div class="game-stat"><span class="stat-key">PC</span><span class="stat-val">Necesse · HoopLand</span></div>
+        <div class="game-stat"><span class="stat-key">Mobile</span><span class="stat-val">MLBB · HoopLand</span></div>
         <div class="game-stat"><span class="stat-key">FM</span><span class="stat-val red">Avid fan. Also hater.</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CONTACT -->
 <section id="contact">
-  <div class="section-header reveal">
-    <span class="section-num">05 //</span>
-    <h2 class="section-title">Find Me</h2>
-    <div class="section-line"></div>
-  </div>
+  <div class="section-header reveal"><span class="section-num">05 //</span><h2 class="section-title">Find Me</h2><div class="section-line"></div></div>
   <div class="socials-grid reveal">
-    <a href="https://github.com/The-Lazy-Dragon" target="_blank" class="social-card clickable">
-      <div class="social-icon">🐙</div>
-      <div><div class="social-label">GitHub</div><div class="social-handle">@The-Lazy-Dragon</div></div>
-    </a>
-    <a href="https://discord.com/users/763960357214486568" target="_blank" class="social-card clickable">
-      <div class="social-icon">💬</div>
-      <div><div class="social-label">Discord</div><div class="social-handle">this.isnt.craig_</div></div>
-    </a>
-    <a href="https://reddit.com/u/Red_DevilAS07" target="_blank" class="social-card clickable">
-      <div class="social-icon">🤖</div>
-      <div><div class="social-label">Reddit</div><div class="social-handle">u/Red_DevilAS07</div></div>
-    </a>
-    <a href="https://open.spotify.com/user/31lom3w2pbow54uirczkccez6pxm" target="_blank" class="social-card clickable">
-      <div class="social-icon">🎵</div>
-      <div><div class="social-label">Spotify</div><div class="social-handle">The Lazy Dragon 👻</div></div>
-    </a>
-    <a href="mailto:gauranga.koirala.npl@gmail.com" class="social-card clickable">
-      <div class="social-icon">📧</div>
-      <div><div class="social-label">Email</div><div class="social-handle">gauranga.koirala.npl@gmail.com</div></div>
-    </a>
+    <a href="https://github.com/The-Lazy-Dragon" target="_blank" rel="noopener" class="social-card clickable"><div class="social-icon">🐙</div><div><div class="social-label">GitHub</div><div class="social-handle">@The-Lazy-Dragon</div></div></a>
+    <a href="https://discord.com/users/763960357214486568" target="_blank" class="social-card clickable"><div class="social-icon">💬</div><div><div class="social-label">Discord</div><div class="social-handle">this.isnt.craig_</div></div></a>
+    <a href="https://open.spotify.com/user/31lom3w2pbow54uirczkccez6pxm" target="_blank" class="social-card clickable"><div class="social-icon">🎵</div><div><div class="social-label">Spotify</div><div class="social-handle">The Lazy Dragon 👻</div></div></a>
+    <a href="mailto:gauranga.koirala.npl@gmail.com" class="social-card clickable"><div class="social-icon">📧</div><div><div class="social-label">Email</div><div class="social-handle">gauranga.koirala.npl@gmail.com</div></div></a>
+    <a href="https://wa.me/9779704555186" target="_blank" class="social-card clickable"><div class="social-icon">📱</div><div><div class="social-label">WhatsApp</div><div class="social-handle">+977 9704555186</div></div></a>
+    <a href="viber://chat?number=%2B9779704555186" class="social-card clickable"><div class="social-icon">📳</div><div><div class="social-label">Viber</div><div class="social-handle">+977 9704555186</div></div></a>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
   <span class="footer-logo">怠竜 · TEARYŪ</span>
   <div>Built with zero frameworks and questionable life choices.</div>
-  <div style="margin-top:0.5rem;color:#3a486a;">
-    Try: <span style="color:var(--accent)">↑ ↑ ↓ ↓ ← → ← → B A</span> &nbsp;·&nbsp; you know what it does.
-  </div>
-  <div id="mobile-konami-hint" style="margin-top:0.3rem;color:#3a486a;font-size:0.62rem;letter-spacing:2px;transition:opacity 0.3s;display:none;">
-    📱 mobile: swipe ↑↑↓↓←→←→ then tap tap
-  </div>
-  <div style="margin-top:1rem;">
-    <a href="https://github.com/The-Lazy-Dragon" class="clickable">GitHub</a> &nbsp;·&nbsp;
-    <a href="https://reddit.com/u/Red_DevilAS07" class="clickable">Reddit</a> &nbsp;·&nbsp;
-    <a href="mailto:gauranga.koirala.npl@gmail.com" class="clickable">Email</a>
-  </div>
+  <div style="margin-top:.5rem;color:#3a486a"><span style="color:var(--accent)">↑↑↓↓←→←→BA</span> · Press <span style="color:var(--accent)">~</span> for secrets · Click the <span style="color:var(--danger)">龍</span></div>
+  <div id="mobile-konami-hint" style="display:none;margin-top:.3rem;color:#3a486a;font-size:.62rem;letter-spacing:2px">📱 swipe ↑↑↓↓←→←→ then tap tap</div>
+  <div style="margin-top:1rem"><a href="https://github.com/The-Lazy-Dragon" class="clickable">GitHub</a> &nbsp;·&nbsp; <a href="mailto:gauranga.koirala.npl@gmail.com" class="clickable">Email</a></div>
 </footer>
 
 <script>
-// ── LOADING ──────────────────────────────────────────────────────────
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const ld = document.getElementById('loading');
-    ld.classList.add('fade-out');
-    setTimeout(() => ld.remove(), 700);
-  }, 1800);
-});
-
-// ── AUDIO ────────────────────────────────────────────────────────────
-let audioCtx;
-function getCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-function playHover() {
-  try {
-    const ctx = getCtx();
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine';
-    o.frequency.setValueAtTime(1100, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.06);
-    g.gain.setValueAtTime(0.06, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-    o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.08);
-  } catch(e){}
-}
-function playClick() {
-  try {
-    const ctx = getCtx();
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine';
-    o.frequency.setValueAtTime(220, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.12);
-    g.gain.setValueAtTime(0.3, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-    o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.12);
-    // noise tick
-    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1)*0.15;
-    const s = ctx.createBufferSource(), g2 = ctx.createGain();
-    s.buffer = buf; s.connect(g2); g2.connect(ctx.destination);
-    g2.gain.setValueAtTime(0.4, ctx.currentTime);
-    g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.02);
-    s.start(ctx.currentTime);
-  } catch(e){}
-}
-function playDragon() {
-  try {
-    const ctx = getCtx();
-    [110, 138, 165, 220, 277].forEach((f,i) => {
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.type = 'sawtooth'; o.frequency.value = f;
-      g.gain.setValueAtTime(0, ctx.currentTime + i * 0.07);
-      g.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i*0.07 + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.07 + 0.5);
-      o.start(ctx.currentTime + i*0.07);
-      o.stop(ctx.currentTime + i*0.07 + 0.5);
-    });
-  } catch(e){}
-}
-
-// ── CURSOR ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════
+// LOADING + PAGE READY
+// ═══════════════════════════════════════════════
+let pageReady = false;
 const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
-});
+cursor.classList.add('loading-state');
+window.addEventListener('load',()=>{setTimeout(()=>{pageReady=true;cursor.classList.remove('loading-state');const ld=document.getElementById('loading');ld.classList.add('fade-out');setTimeout(()=>ld.remove(),700)},1800)});
+if('ontouchstart'in window){document.getElementById('mobile-konami-hint').style.display='block';document.getElementById('game-dpad').style.display='grid'}
 
-function attachClickables() {
-  document.querySelectorAll('a, button, .clickable, [onclick]').forEach(el => {
-    if (el._hoverAttached) return;
-    el._hoverAttached = true;
-    el.addEventListener('mouseenter', () => {
-      cursor.textContent = '↝';
-      cursor.classList.add('hovering');
-      playHover();
-    });
-    el.addEventListener('mouseleave', () => {
-      cursor.textContent = '◌';
-      cursor.classList.remove('hovering');
-    });
+// ═══════════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════════
+let audioCtx;
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+function tone(freq,type,vol,dur,t){try{const c=getCtx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=type||'sine';o.frequency.value=freq;g.gain.setValueAtTime(vol||.2,t||c.currentTime);g.gain.exponentialRampToValueAtTime(.001,(t||c.currentTime)+dur);o.start(t||c.currentTime);o.stop((t||c.currentTime)+dur)}catch(e){}}
+function playHover(){tone(1100,'sine',.06,.08)}
+function playClick(){tone(220,'sine',.3,.12)}
+function playHit(){tone(80,'sawtooth',.4,.15)}
+function playWin(){[523,659,784,1047].forEach((f,i)=>tone(f,'sine',.2,.3,getCtx().currentTime+i*.12))}
+function playGgmu(){try{const c=getCtx();[220,277,330,440].forEach((f,i)=>tone(f,'square',.2,.4,c.currentTime+i*.1))}catch(e){}}
+function playGoat(){try{const c=getCtx();[392,494,587,784].forEach((f,i)=>tone(f,'sine',.15,.5,c.currentTime+i*.15))}catch(e){}}
+function playSleep(){try{[200,180,160,140].forEach((f,i)=>tone(f,'sine',.1,.6,getCtx().currentTime+i*.4))}catch(e){}}
+
+// ═══════════════════════════════════════════════
+// CURSOR + CLICK LOADING DELAY
+// ═══════════════════════════════════════════════
+document.addEventListener('mousemove',e=>{cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px'});
+function attachClickables(){
+  document.querySelectorAll('a,button,.clickable,[onclick]').forEach(el=>{
+    if(el._ha)return;el._ha=true;
+    el.addEventListener('mouseenter',()=>{cursor.textContent='↝';cursor.classList.add('hovering');playHover()});
+    el.addEventListener('mouseleave',()=>{cursor.textContent='◌';cursor.classList.remove('hovering')});
   });
 }
 attachClickables();
 
-document.addEventListener('mousedown', () => { cursor.classList.add('clicking'); playClick(); });
-document.addEventListener('mouseup',   () => cursor.classList.remove('clicking'));
-
-// ── TRAIL ────────────────────────────────────────────────────────────
-const tc = document.getElementById('trail-canvas');
-const tctx = tc.getContext('2d');
-function resizeTrail() { tc.width = window.innerWidth; tc.height = window.innerHeight; }
-resizeTrail(); window.addEventListener('resize', resizeTrail);
-const dots = []; let lastT = 0;
-document.addEventListener('mousemove', e => {
-  if (Date.now() - lastT < 40) return; lastT = Date.now();
-  dots.push({ x: e.clientX, y: e.clientY, life: 1 });
+// Cursor loading on ANY link click (before navigation)
+document.addEventListener('click',e=>{
+  const link=e.target.closest('a[href]');
+  if(!link)return;
+  const href=link.getAttribute('href');
+  // For hash/scroll links — add delay
+  if(href&&href.startsWith('#')&&!link.target){
+    e.preventDefault();
+    cursor.classList.add('loading-state');
+    const target=document.querySelector(href);
+    setTimeout(()=>{cursor.classList.remove('loading-state');target?.scrollIntoView({behavior:'smooth'})},900);
+    return;
+  }
+  // For external links — show loading animation but let browser handle navigation
+  cursor.classList.add('loading-state');
+  setTimeout(()=>cursor.classList.remove('loading-state'),1200);
 });
-(function trailLoop() {
-  tctx.clearRect(0, 0, tc.width, tc.height);
-  for (let i = dots.length-1; i >= 0; i--) {
-    const d = dots[i]; d.life -= 0.045;
-    if (d.life <= 0) { dots.splice(i,1); continue; }
-    tctx.beginPath();
-    tctx.arc(d.x, d.y, 3*d.life, 0, Math.PI*2);
-    tctx.fillStyle = `rgba(0,255,247,${d.life*0.55})`;
-    tctx.fill();
-  }
-  requestAnimationFrame(trailLoop);
-})();
 
-// ── TYPEWRITER ───────────────────────────────────────────────────────
-const lines = [
-  'BSc IT Student @ IIC, Itahari',
-  'Building things way too complex for no reason',
-  'No frameworks. No installs. One file.',
-  'Roam main. Former Alucard. 95.2% WR.',
-  'GGMU. Fuck oil money.',
-  'MJ is GOAT. LeBron is the real deal.',
-  'Built at 3AM because nothing else to do.',
-  'Avid fan and hater of Football Manager.',
-];
-let li=0, ci=0, del=false;
-const tw = document.getElementById('typewriter');
-function type() {
-  const cur = lines[li];
-  if (!del) {
-    tw.textContent = cur.slice(0,++ci);
-    if (ci===cur.length){del=true;setTimeout(type,2200);return;}
-    setTimeout(type,55);
+document.addEventListener('mousedown',e=>{
+  if(!pageReady){cursor.classList.add('loading-state');setTimeout(()=>{cursor.classList.remove('loading-state');spawnBurst(e.clientX,e.clientY)},1000);return}
+  cursor.classList.add('clicking');playClick();spawnBurst(e.clientX,e.clientY);
+});
+document.addEventListener('mouseup',()=>cursor.classList.remove('clicking'));
+
+// ═══════════════════════════════════════════════
+// TRAIL
+// ═══════════════════════════════════════════════
+const tc=document.getElementById('trail-canvas'),tctx=tc.getContext('2d');
+function rT(){tc.width=window.innerWidth;tc.height=window.innerHeight}rT();window.addEventListener('resize',rT);
+const dots=[];let lastT=0;
+document.addEventListener('mousemove',e=>{if(Date.now()-lastT<40)return;lastT=Date.now();dots.push({x:e.clientX,y:e.clientY,life:1})});
+(function tl(){tctx.clearRect(0,0,tc.width,tc.height);for(let i=dots.length-1;i>=0;i--){const d=dots[i];d.life-=.045;if(d.life<=0){dots.splice(i,1);continue}tctx.beginPath();tctx.arc(d.x,d.y,3*d.life,0,Math.PI*2);tctx.fillStyle=`rgba(0,255,247,${d.life*.55})`;tctx.fill()}requestAnimationFrame(tl)})();
+
+// ═══════════════════════════════════════════════
+// CLICK BURST
+// ═══════════════════════════════════════════════
+const cc=document.getElementById('click-canvas'),cctx=cc.getContext('2d');
+function rC(){cc.width=window.innerWidth;cc.height=window.innerHeight}rC();window.addEventListener('resize',rC);
+const bursts=[];
+function spawnBurst(x,y,cols){const c=cols||['#00fff7','#ff153f','#fff','#e8b85b','#b5e853'];for(let i=0;i<14;i++){const a=Math.random()*Math.PI*2,sp=2+Math.random()*6;bursts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,color:c[Math.floor(Math.random()*c.length)],r:2+Math.random()*3})}}
+document.addEventListener('touchstart',e=>spawnBurst(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+(function bl(){cctx.clearRect(0,0,cc.width,cc.height);for(let i=bursts.length-1;i>=0;i--){const b=bursts[i];b.life-=.04;b.x+=b.vx;b.y+=b.vy;b.vy+=.15;if(b.life<=0){bursts.splice(i,1);continue}cctx.beginPath();cctx.arc(b.x,b.y,b.r*b.life,0,Math.PI*2);cctx.fillStyle=b.color;cctx.globalAlpha=b.life;cctx.fill();cctx.globalAlpha=1}requestAnimationFrame(bl)})();
+
+// ═══════════════════════════════════════════════
+// VISUAL EFFECTS FOR TERMINAL CMDS
+// ═══════════════════════════════════════════════
+function flashScreen(color,dur){const f=document.getElementById('flash-overlay');f.style.background=color;f.style.opacity='.18';setTimeout(()=>f.style.opacity='0',dur||600)}
+function burstAll(cols){for(let i=0;i<8;i++)setTimeout(()=>spawnBurst(Math.random()*window.innerWidth,Math.random()*window.innerHeight,cols),i*80)}
+
+function fxGgmu(){flashScreen('#cc0000',800);burstAll(['#ff0000','#cc0000','#ffffff','#ffcc00']);playGgmu();toast('⚽','GLORY GLORY MAN UNITED','ggmu')}
+function fxGoat(){flashScreen('#e8b85b',600);burstAll(['#e8b85b','#ffd700','#ffffff']);playGoat();toast('🐐','GOAT DEBATE INITIATED','goat')}
+function fxSleep(){
+  playSleep();
+  const f=document.getElementById('flash-overlay');f.style.background='#000';f.style.opacity='.7';
+  const zc=document.getElementById('zzz-container');zc.style.display='block';
+  for(let i=0;i<6;i++){const z=document.createElement('div');z.textContent='z';z.style.cssText=`position:absolute;font-size:${1+i*.4}rem;color:#7a9ab0;left:${20+Math.random()*60}%;top:${20+Math.random()*60}%;opacity:0;animation:fadeUp 1s ${i*.3}s forwards;pointer-events:none`;zc.appendChild(z)}
+  setTimeout(()=>{f.style.opacity='0';zc.style.display='none';zc.innerHTML=''},3000);
+}
+function fxProjects(){
+  const sec=document.getElementById('projects');sec.scrollIntoView({behavior:'smooth'});
+  setTimeout(()=>{['card-naval','card-ttt','card-cross'].forEach((id,i)=>{setTimeout(()=>{const c=document.getElementById(id);c.classList.add('glow-highlight');setTimeout(()=>c.classList.remove('glow-highlight'),600)},i*200)})},600);
+}
+function fxKonami(){toggleKonami();burstAll(['#00ff41','#00fff7'])}
+
+// ═══════════════════════════════════════════════
+// TYPEWRITER
+// ═══════════════════════════════════════════════
+const lines=['BSc IT Student @ IIC, Itahari','Building things way too complex for no reason','No frameworks. No installs. One file.','Roam main. Former Alucard. 95.2% WR.','GGMU. Fuck oil money.','MJ is GOAT. LeBron is the real deal.','Built at 3AM because nothing else to do.','Avid fan and hater of Football Manager.'];
+let li=0,ci=0,del=false;const tw=document.getElementById('typewriter');
+function type(){const cur=lines[li];if(!del){tw.textContent=cur.slice(0,++ci);if(ci===cur.length){del=true;setTimeout(type,2200);return}setTimeout(type,55)}else{tw.textContent=cur.slice(0,--ci);if(ci===0){del=false;li=(li+1)%lines.length;setTimeout(type,400);return}setTimeout(type,28)}}
+setTimeout(type,2000);
+
+// ═══════════════════════════════════════════════
+// SCROLL REVEAL
+// ═══════════════════════════════════════════════
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}})},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(r=>io.observe(r));
+
+// ═══════════════════════════════════════════════
+// MATRIX / KONAMI
+// ═══════════════════════════════════════════════
+const mc=document.getElementById('matrix-canvas'),mctx=mc.getContext('2d');
+function rM(){mc.width=window.innerWidth;mc.height=window.innerHeight}rM();window.addEventListener('resize',rM);
+let drops=[];function initDrops(){drops=Array(Math.floor(window.innerWidth/14)).fill(1)}initDrops();window.addEventListener('resize',initDrops);
+let rainMode='binary',matrixActive=false,matrixRaf;
+function getRainChar(){return rainMode==='binary'?(Math.random()>.5?'1':'0'):String.fromCharCode(0x30A0+Math.random()*96)}
+function drawMatrix(){mctx.fillStyle='rgba(0,5,0,.055)';mctx.fillRect(0,0,mc.width,mc.height);mctx.fillStyle='#00ff41';mctx.font='14px Share Tech Mono';drops.forEach((y,i)=>{mctx.fillText(getRainChar(),i*14,y*14);if(y*14>mc.height&&Math.random()>.97)drops[i]=0;drops[i]++});matrixRaf=requestAnimationFrame(drawMatrix)}
+function setRainMode(m){rainMode=m;document.getElementById('btn-bin').classList.toggle('active',m==='binary');document.getElementById('btn-jap').classList.toggle('active',m==='japanese');if(m==='japanese')unlockAch('katakana');else unlockAch('binary')}
+
+function toggleKonami(){
+  matrixActive=!matrixActive;
+  const banner=document.getElementById('konami-banner'),nav=document.getElementById('main-nav'),tog=document.getElementById('rain-toggle'),ab=document.getElementById('ach-btn');
+  if(matrixActive){
+    document.body.classList.add('konami');mc.classList.add('active');banner.classList.add('active');nav.classList.add('banner-open');tog.classList.add('visible');ab.style.display='block';
+    achSystemActive=true;mctx.clearRect(0,0,mc.width,mc.height);initDrops();drawMatrix();unlockAch('konami');attachClickables();
+    toast('🔴','MATRIX PROTOCOL ACTIVATED');
+    [261,329,392,523].forEach((f,i)=>tone(f,'sine',.15,.25,getCtx().currentTime+i*.08));
   } else {
-    tw.textContent = cur.slice(0,--ci);
-    if (ci===0){del=false;li=(li+1)%lines.length;setTimeout(type,400);return;}
-    setTimeout(type,28);
-  }
-}
-setTimeout(type, 2000);
-
-// show mobile konami hint only on touch devices
-if ('ontouchstart' in window) {
-  const mh = document.getElementById('mobile-konami-hint');
-  if (mh) mh.style.display = 'block';
-}
-
-// ── SCROLL REVEAL ────────────────────────────────────────────────────
-const io = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);} });
-}, { threshold:0.1 });
-document.querySelectorAll('.reveal').forEach(r => io.observe(r));
-
-// ── MATRIX / KONAMI ──────────────────────────────────────────────────
-const mc = document.getElementById('matrix-canvas');
-const mctx = mc.getContext('2d');
-function resizeMatrix() { mc.width=window.innerWidth; mc.height=window.innerHeight; }
-resizeMatrix(); window.addEventListener('resize', resizeMatrix);
-
-let drops = [];
-function initDrops() { drops = Array(Math.floor(window.innerWidth/14)).fill(1); }
-initDrops(); window.addEventListener('resize', initDrops);
-
-let rainMode = 'binary'; // 'binary' or 'japanese'
-let matrixActive = false, matrixRaf;
-
-function getRainChar() {
-  if (rainMode === 'binary') return Math.random() > 0.5 ? '1' : '0';
-  return String.fromCharCode(0x30A0 + Math.random() * 96);
-}
-function getRainColor() {
-  return matrixActive && !document.body.classList.contains('konami')
-    ? '#00ff41'
-    : document.body.classList.contains('konami') ? '#00ff41' : '#00fff7';
-}
-
-function drawMatrix() {
-  mctx.fillStyle = 'rgba(0,5,0,0.055)';
-  mctx.fillRect(0,0,mc.width,mc.height);
-  mctx.fillStyle = getRainColor();
-  mctx.font = '14px Share Tech Mono';
-  drops.forEach((y,i) => {
-    const ch = getRainChar();
-    mctx.fillText(ch, i*14, y*14);
-    if (y*14 > mc.height && Math.random() > 0.97) drops[i] = 0;
-    drops[i]++;
-  });
-  matrixRaf = requestAnimationFrame(drawMatrix);
-}
-
-function setRainMode(mode) {
-  rainMode = mode;
-  document.getElementById('btn-bin').classList.toggle('active', mode==='binary');
-  document.getElementById('btn-jap').classList.toggle('active', mode==='japanese');
-}
-
-function toggleKonami() {
-  matrixActive = !matrixActive;
-  const banner  = document.getElementById('konami-banner');
-  const nav     = document.getElementById('main-nav');
-  const toggle  = document.getElementById('rain-toggle');
-
-  if (matrixActive) {
-    document.body.classList.add('konami');
-    mc.classList.add('active');
-    banner.classList.add('active');
-    nav.classList.add('banner-open');
-    toggle.classList.add('visible');
-    mctx.clearRect(0,0,mc.width,mc.height);
-    initDrops();
-    drawMatrix();
-    attachClickables();
-    // chord sfx
-    try {
-      const ctx = getCtx();
-      [261,329,392,523].forEach((f,i) => {
-        const o=ctx.createOscillator(),g=ctx.createGain();
-        o.connect(g);g.connect(ctx.destination);
-        o.frequency.value=f;
-        g.gain.setValueAtTime(0.15,ctx.currentTime+i*0.08);
-        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.08+0.25);
-        o.start(ctx.currentTime+i*0.08);o.stop(ctx.currentTime+i*0.08+0.25);
-      });
-    } catch(e){}
-  } else {
-    document.body.classList.remove('konami');
-    mc.classList.remove('active');
-    banner.classList.remove('active');
-    nav.classList.remove('banner-open');
-    toggle.classList.remove('visible');
-    cancelAnimationFrame(matrixRaf);
-    mctx.clearRect(0,0,mc.width,mc.height);
+    document.body.classList.remove('konami');mc.classList.remove('active');banner.classList.remove('active');nav.classList.remove('banner-open');tog.classList.remove('visible');
+    cancelAnimationFrame(matrixRaf);mctx.clearRect(0,0,mc.width,mc.height);
   }
 }
 
-// ── KONAMI — KEYBOARD ────────────────────────────────────────────────
+// KONAMI keyboard + mobile
 const KONAMI=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
 let kseq=[];
-document.addEventListener('keydown', e => {
-  kseq.push(e.key);
-  if (kseq.length > KONAMI.length) kseq.shift();
-  if (JSON.stringify(kseq)===JSON.stringify(KONAMI)) toggleKonami();
+const KT=['up','up','down','down','left','right','left','right','tap','tap'];
+let tseq=[],tSX=0,tSY=0;
+function pushTouch(dir){tseq.push(dir);if(tseq.length>KT.length)tseq.shift();const h=document.getElementById('mobile-konami-hint');if(h){h.style.opacity='1';clearTimeout(h._t);h._t=setTimeout(()=>{h.style.opacity=''},600)}if(JSON.stringify(tseq)===JSON.stringify(KT)){tseq=[];toggleKonami()}}
+document.addEventListener('touchstart',e=>{tSX=e.touches[0].clientX;tSY=e.touches[0].clientY},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tSX,dy=e.changedTouches[0].clientY-tSY,ax=Math.abs(dx),ay=Math.abs(dy);if(ax<40&&ay<40)pushTouch('tap');else if(ay>ax)pushTouch(dy<0?'up':'down');else pushTouch(dx<0?'left':'right')},{passive:true});
+
+// ═══════════════════════════════════════════════
+// ACHIEVEMENTS
+// ═══════════════════════════════════════════════
+let achSystemActive=false;
+const ACHIEVEMENTS=[
+  {id:'konami',icon:'🔴',name:'MATRIX PROTOCOL',desc:'Activate the Konami code'},
+  {id:'terminal',icon:'💻',name:'CONNECTED',desc:'Open the secret terminal'},
+  {id:'history',icon:'📜',name:'HISTORIAN',desc:'Navigate terminal history (↑ key)'},
+  {id:'dragon_cmd',icon:'🔴',name:'DRAGON MODE',desc:'Type "dragon" in terminal'},
+  {id:'game_open',icon:'⚔️',name:'CHALLENGER',desc:'Open the Gauntlet'},
+  {id:'snake',icon:'🐍',name:'SNAKE CHARMER',desc:'Play Snake'},
+  {id:'win',icon:'🏆',name:'DRAGON SLAYER',desc:'Beat the Gauntlet'},
+  {id:'rick',icon:'🎵',name:'RICKROLLED',desc:'Claim your prize'},
+  {id:'credits',icon:'🎬',name:'ROLL CREDITS',desc:'Watch the credits'},
+  {id:'quiz',icon:'🧠',name:'MEME SCHOLAR',desc:'Complete the post-credits quiz'},
+  {id:'binary',icon:'🔢',name:'BINARY',desc:'Switch to binary rain'},
+  {id:'katakana',icon:'カ',name:'KATAKANA',desc:'Switch to katakana rain'},
+  {id:'nightowl',icon:'🌙',name:'NIGHT OWL',desc:'Visit between midnight and 5AM'},
+  {id:'orb',icon:'🐉',name:'ORB SEEKER',desc:'Hover the secret orb'},
+  {id:'skill',icon:'☠️',name:'SKILL ISSUE',desc:'Die in the Gauntlet'},
+];
+const unlockedAchs=new Set();
+function unlockAch(id){if(!achSystemActive&&id!=='konami')return;if(unlockedAchs.has(id))return;unlockedAchs.add(id);const a=ACHIEVEMENTS.find(x=>x.id===id);if(a){toast(a.icon,`ACHIEVEMENT: ${a.name}`,'a_'+id);renderAchList()}}
+function renderAchList(){const list=document.getElementById('ach-list');list.innerHTML=ACHIEVEMENTS.map(a=>`<div class="ach-item${unlockedAchs.has(a.id)?'':' locked'}"><span class="ach-icon">${a.icon}</span><div><div class="ach-name">${a.name}</div><div class="ach-desc">${unlockedAchs.has(a.id)?a.desc:'???'}</div></div></div>`).join('')}
+function toggleAchPanel(){document.getElementById('ach-modal').classList.toggle('show');renderAchList()}
+document.getElementById('secret-orb').addEventListener('mouseenter',()=>{unlockAch('orb');toast('🐉','The 龍 stirs...','orb_h')},{once:true});
+const hr=new Date().getHours();if(hr<5)setTimeout(()=>unlockAch('nightowl'),2000);
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+const toasted=new Set();
+function toast(icon,msg,id){if(id&&toasted.has(id))return;if(id)toasted.add(id);const el=document.createElement('div');el.className='toast';el.innerHTML=`<span style="margin-right:.4rem">${icon}</span>${msg}`;document.getElementById('toast-container').appendChild(el);requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),400)},3500)}
+
+// ═══════════════════════════════════════════════
+// DRAGON RED THEME
+// ═══════════════════════════════════════════════
+let dragonMode=false;
+function toggleDragonTheme(){dragonMode=!dragonMode;document.body.classList.toggle('dragon-mode',dragonMode);unlockAch('dragon_cmd');flashScreen(dragonMode?'#ff153f':'#00fff7',400);return dragonMode?`<span style="color:#ff153f">// DRAGON MODE ACTIVATED //</span>\nSite claimed by 怠竜. Press the <span style="color:#ff153f">龍</span> bubble (bottom-right) to enter the Gauntlet.\nType 'dragon' again to deactivate.`:`<span style="color:var(--accent)">// Dragon mode OFF. Normalcy restored.</span>`}
+
+// ═══════════════════════════════════════════════
+// GAMES
+// ═══════════════════════════════════════════════
+const GC=document.getElementById('game-canvas'),GX=GC.getContext('2d');
+const GW=GC.width,GH=GC.height;
+let currentGame='none';
+
+// DRAGON GAUNTLET
+const DRAGON_MSGS=[
+  {t:0,m:'go back to playing snake and ladders, kid.'},
+  {t:5,m:'ludo bots would genuinely beat you. embarrassing.'},
+  {t:10,m:'you should be playing dress-up in roblox. pathetic.'},
+  {t:15,m:'not bad. mediocre at best. just like your MLBB wr.'},
+  {t:20,m:'decent. shockingly.'},
+  {t:25,m:'ok. you can lock in I guess.'},
+  {t:30,m:'ok. show me more.'},
+  {t:40,m:'ok. the dragon is impressed.'},
+  {t:45,m:'u can play huh?'},
+];
+
+const D={active:false,phase:'idle',raf:null,player:{x:GW/2-20,y:GH-70,w:38,h:38,speed:5},enemies:[],lives:3,timer:10,lastTime:0,spawnTimer:0,keys:{},invTimer:0};
+function dragonStart(){D.player={x:GW/2-20,y:GH-70,w:38,h:38,speed:5};D.enemies=[];D.lives=3;D.timer=10;D.lastTime=performance.now();D.spawnTimer=0;D.keys={};D.invTimer=0;D.phase='playing';if(!D.active){D.active=true;requestAnimationFrame(t=>dragonLoop(t))}}
+function dragonLoop(now){
+  if(!D.active||currentGame!=='dragon')return;
+  if(D.phase==='playing'){
+    const dt=Math.min((now-D.lastTime)/1000,.05);D.lastTime=now;D.timer-=dt;
+    if(D.timer<=0){D.timer=0;gameWin();return}
+    D.spawnTimer+=dt*1000;const interval=Math.max(350,1100-(10-D.timer)*80);
+    if(D.spawnTimer>=interval){D.spawnTimer=0;const sp=1.8+Math.random()*2.5+(10-D.timer)*.25;D.enemies.push({x:Math.random()*(GW-30),y:-30,w:28,h:28,speed:sp})}
+    const p=D.player;
+    if(D.keys['ArrowLeft']||D.keys['a']||D.keys['left'])p.x-=p.speed;
+    if(D.keys['ArrowRight']||D.keys['d']||D.keys['right'])p.x+=p.speed;
+    if(D.keys['ArrowUp']||D.keys['w']||D.keys['up'])p.y-=p.speed;
+    if(D.keys['ArrowDown']||D.keys['s']||D.keys['down'])p.y+=p.speed;
+    p.x=Math.max(0,Math.min(GW-p.w,p.x));p.y=Math.max(0,Math.min(GH-p.h,p.y));
+    if(D.invTimer>0)D.invTimer-=dt;
+    for(let i=D.enemies.length-1;i>=0;i--){const e=D.enemies[i];e.y+=e.speed;if(e.y>GH+40){D.enemies.splice(i,1);continue}if(D.invTimer<=0&&p.x<e.x+e.w&&p.x+p.w>e.x&&p.y<e.y+e.h&&p.y+p.h>e.y){D.enemies.splice(i,1);D.lives--;D.invTimer=1.2;playHit();if(D.lives<=0){unlockAch('skill');gameDragonLose();return}}}
+    dragonDraw();
+  }
+  D.raf=requestAnimationFrame(t=>dragonLoop(t));
+}
+function dragonDraw(){
+  GX.clearRect(0,0,GW,GH);GX.fillStyle='#060e06';GX.fillRect(0,0,GW,GH);
+  GX.strokeStyle='rgba(0,255,65,.05)';GX.lineWidth=1;
+  for(let x=0;x<GW;x+=30){GX.beginPath();GX.moveTo(x,0);GX.lineTo(x,GH);GX.stroke()}
+  for(let y=0;y<GH;y+=30){GX.beginPath();GX.moveTo(0,y);GX.lineTo(GW,y);GX.stroke()}
+  const p=D.player;
+  if(D.invTimer<=0||Math.floor(D.invTimer*10)%2===0){GX.strokeStyle='#00fff7';GX.lineWidth=2;GX.shadowBlur=12;GX.shadowColor='#00fff7';GX.strokeRect(p.x,p.y,p.w,p.h);GX.fillStyle='#00fff7';GX.font='22px Share Tech Mono';GX.textAlign='center';GX.textBaseline='middle';GX.fillText('怠',p.x+p.w/2,p.y+p.h/2);GX.shadowBlur=0}
+  D.enemies.forEach(e=>{GX.fillStyle='#ff153f';GX.shadowBlur=8;GX.shadowColor='#ff153f';GX.fillRect(e.x,e.y,e.w,e.h);GX.shadowBlur=0;GX.fillStyle='#fff';GX.font='16px serif';GX.textAlign='center';GX.textBaseline='middle';GX.fillText('🔥',e.x+e.w/2,e.y+e.h/2)});
+  GX.shadowBlur=0;GX.textBaseline='alphabetic';
+  GX.fillStyle='#00fff7';GX.font='bold 13px Orbitron,monospace';GX.textAlign='left';GX.fillText(`TIME: ${Math.ceil(D.timer)}s`,10,22);
+  GX.textAlign='right';GX.fillStyle='#ff153f';GX.fillText('♥'.repeat(D.lives),GW-10,22);GX.fillStyle='#3a486a';GX.fillText('♥'.repeat(3-D.lives),GW-10-D.lives*14,22);
+  const pct=D.timer/10;GX.fillStyle='#1a3a1a';GX.fillRect(10,28,GW-20,5);GX.fillStyle=pct>.5?'#00ff41':pct>.25?'#ffaa00':'#ff153f';GX.fillRect(10,28,(GW-20)*pct,5);
+}
+function gameDragonLose(){D.active=false;cancelAnimationFrame(D.raf);document.getElementById('go-msg').textContent='skill issue bro. stick to watching people play.';document.getElementById('game-over-screen').classList.add('show')}
+
+// SNAKE (bigger grid: 10 cols x 12 rows, ~34px cells)
+const SN_COLS=10,SN_ROWS=12,SN_CW=Math.floor(GW/SN_COLS),SN_CH=Math.floor(GH/SN_ROWS);
+const SN={active:false,raf:null,snake:[],dir:{x:1,y:0},nextDir:{x:1,y:0},food:{x:5,y:5},score:0,lastMove:0,interval:180,tSX:0,tSY:0};
+const SNAKE_MSGS=[
+  {min:0,  max:5,  msg:'stick to snake and ladders, kid. seriously.'},
+  {min:5,  max:10, msg:'ludo bots would beat you. actual ludo bots.'},
+  {min:10, max:15, msg:'you should be playing dress-up in Roblox. pathetic.'},
+  {min:15, max:20, msg:'not bad. mediocre at best. just like your MLBB wr.'},
+  {min:20, max:25, msg:'decent. shockingly.'},
+  {min:25, max:30, msg:'ok. you can lock in I guess.'},
+  {min:30, max:40, msg:'ok. show me more.'},
+  {min:40, max:45, msg:'ok. the dragon is impressed.'},
+  {min:45, max:50, msg:'you can play huh?'},
+  {min:50, max:80, msg:'ok. now try dragon gauntlet.'},
+];
+function getSnakeMsg(score){const m=SNAKE_MSGS.find(x=>score>=x.min&&score<x.max);return m?m.msg:'ok. not bad.'}
+function snakeStart(){
+  const mx=Math.floor(SN_COLS/2),my=Math.floor(SN_ROWS/2);
+  SN.snake=[{x:mx,y:my},{x:mx-1,y:my},{x:mx-2,y:my}];SN.dir={x:1,y:0};SN.nextDir={x:1,y:0};SN.score=0;SN.lastMove=0;SN.interval=180;snakeFood();
+  if(!SN.active){SN.active=true;requestAnimationFrame(t=>snakeLoop(t))}
+}
+function snakeFood(){let p;do{p={x:Math.floor(Math.random()*SN_COLS),y:Math.floor(Math.random()*SN_ROWS)}}while(SN.snake.some(s=>s.x===p.x&&s.y===p.y));SN.food=p}
+function snakeLoop(now){
+  if(!SN.active||currentGame!=='snake')return;
+  if(now-SN.lastMove>SN.interval){
+    SN.lastMove=now;SN.dir={...SN.nextDir};
+    const h={x:(SN.snake[0].x+SN.dir.x+SN_COLS)%SN_COLS,y:(SN.snake[0].y+SN.dir.y+SN_ROWS)%SN_ROWS};
+    if(SN.snake.some(s=>s.x===h.x&&s.y===h.y)){snakeLose();return}
+    SN.snake.unshift(h);
+    if(h.x===SN.food.x&&h.y===SN.food.y){SN.score++;SN.interval=Math.max(70,SN.interval-4);snakeFood();if(SN.score>=80){snakeWin();return}}
+    else SN.snake.pop();
+    snakeDraw();
+  }
+  SN.raf=requestAnimationFrame(t=>snakeLoop(t));
+}
+function snakeDraw(){
+  GX.clearRect(0,0,GW,GH);GX.fillStyle='#060e06';GX.fillRect(0,0,GW,GH);
+  GX.strokeStyle='rgba(0,255,65,.04)';GX.lineWidth=1;
+  for(let x=0;x<GW;x+=SN_CW){GX.beginPath();GX.moveTo(x,0);GX.lineTo(x,GH);GX.stroke()}
+  for(let y=0;y<GH;y+=SN_CH){GX.beginPath();GX.moveTo(0,y);GX.lineTo(GW,y);GX.stroke()}
+  GX.fillStyle='#ff153f';GX.shadowBlur=10;GX.shadowColor='#ff153f';GX.fillRect(SN.food.x*SN_CW+2,SN.food.y*SN_CH+2,SN_CW-4,SN_CH-4);GX.shadowBlur=0;
+  SN.snake.forEach((s,i)=>{GX.fillStyle=i===0?'#00fff7':'#00cc88';GX.shadowBlur=i===0?8:0;GX.shadowColor='#00fff7';GX.fillRect(s.x*SN_CW+1,s.y*SN_CH+1,SN_CW-2,SN_CH-2);GX.shadowBlur=0});
+  GX.fillStyle='#00fff7';GX.font='bold 13px Orbitron,monospace';GX.textAlign='left';GX.textBaseline='alphabetic';GX.fillText(`SCORE: ${SN.score} / 80`,10,22);
+  // progress bar
+  GX.fillStyle='#1a3a1a';GX.fillRect(10,28,GW-20,5);GX.fillStyle='#00ff41';GX.fillRect(10,28,(GW-20)*(SN.score/80),5);
+}
+function snakeLose(){SN.active=false;cancelAnimationFrame(SN.raf);document.getElementById('go-msg').innerHTML=`Score: ${SN.score}<br><span style="font-size:.7rem">${getSnakeMsg(SN.score)}</span>`;document.getElementById('game-over-screen').classList.add('show')}
+function snakeWin(){SN.active=false;cancelAnimationFrame(SN.raf);gameWin()}
+
+// SNAKE canvas swipe
+GC.addEventListener('touchstart',e=>{SN.tSX=e.touches[0].clientX;SN.tSY=e.touches[0].clientY;e.preventDefault()},{passive:false});
+GC.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-SN.tSX,dy=e.changedTouches[0].clientY-SN.tSY;if(Math.abs(dx)<20&&Math.abs(dy)<20)return;if(Math.abs(dx)>Math.abs(dy)){if(dx>0&&SN.dir.x!==-1)SN.nextDir={x:1,y:0};else if(SN.dir.x!==1)SN.nextDir={x:-1,y:0}}else{if(dy>0&&SN.dir.y!==-1)SN.nextDir={x:0,y:1};else if(SN.dir.y!==1)SN.nextDir={x:0,y:-1}}e.preventDefault()},{passive:false});
+
+// STATE MANAGEMENT
+function selectGame(type){hideAllScreens();currentGame=type;document.getElementById('game-sub').textContent=type==='dragon'?'SURVIVE 10s · 3 LIVES · WASD/ARROWS':'EAT FOOD · SCORE 80 TO WIN · SWIPE/WASD';if(type==='dragon'){D.active=false;dragonStart();unlockAch('game_open')}else{SN.active=false;snakeStart();unlockAch('snake')}}
+function restartCurrent(){hideAllScreens();if(currentGame==='dragon'){D.active=false;dragonStart()}else{SN.active=false;snakeStart()}}
+function showSelectScreen(){D.active=false;SN.active=false;currentGame='none';cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);hideAllScreens();document.getElementById('game-select-screen').classList.add('show')}
+function hideAllScreens(){['game-select-screen','game-over-screen','game-win-screen'].forEach(id=>document.getElementById(id).classList.remove('show'))}
+function gameWin(){D.active=false;SN.active=false;cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);playWin();unlockAch('win');hideAllScreens();document.getElementById('game-win-screen').classList.add('show');setTimeout(()=>{document.getElementById('win-bar').style.width='100%'},100);setTimeout(()=>{document.getElementById('win-bar-text').textContent='PRIZE UNLOCKED. OPENING...'},3000);setTimeout(()=>{closeGame();showRick()},3800)}
+function startGame(){document.getElementById('dragon-overlay').style.opacity='1';document.getElementById('dragon-overlay').style.pointerEvents='all';showSelectScreen();attachClickables()}
+function closeGame(){D.active=false;SN.active=false;cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);document.getElementById('dragon-overlay').style.opacity='0';document.getElementById('dragon-overlay').style.pointerEvents='none'}
+
+// KEYBOARD
+document.addEventListener('keydown',e=>{
+  D.keys[e.key]=true;
+  if(e.key==='ArrowLeft'||e.key==='a'){if(SN.dir.x!==1)SN.nextDir={x:-1,y:0}}
+  if(e.key==='ArrowRight'||e.key==='d'){if(SN.dir.x!==-1)SN.nextDir={x:1,y:0}}
+  if(e.key==='ArrowUp'||e.key==='w'){if(SN.dir.y!==1)SN.nextDir={x:0,y:-1}}
+  if(e.key==='ArrowDown'||e.key==='s'){if(SN.dir.y!==-1)SN.nextDir={x:0,y:1}}
+  if(e.key==='Escape'){closeGame();closeRick();closeCredits();closeQuiz();closeTerm()}
+  kseq.push(e.key);if(kseq.length>KONAMI.length)kseq.shift();
+  if(JSON.stringify(kseq)===JSON.stringify(KONAMI))toggleKonami();
 });
+document.addEventListener('keyup',e=>D.keys[e.key]=false);
+function dpadPress(d){D.keys[d]=true;if(d==='left'&&SN.dir.x!==1)SN.nextDir={x:-1,y:0};if(d==='right'&&SN.dir.x!==-1)SN.nextDir={x:1,y:0};if(d==='up'&&SN.dir.y!==1)SN.nextDir={x:0,y:-1};if(d==='down'&&SN.dir.y!==-1)SN.nextDir={x:0,y:1}}
+function dpadRelease(d){D.keys[d]=false}
 
-// ── KONAMI — MOBILE SWIPE ────────────────────────────────────────────
-// Sequence: ↑ ↑ ↓ ↓ ← → ← → tap tap
-const KONAMI_TOUCH = ['up','up','down','down','left','right','left','right','tap','tap'];
-let tseq = [];
-let touchStartX = 0, touchStartY = 0;
-let lastTap = 0;
-
-function pushTouch(dir) {
-  tseq.push(dir);
-  if (tseq.length > KONAMI_TOUCH.length) tseq.shift();
-  // flash the hint briefly so user knows input registered
-  const hint = document.getElementById('mobile-konami-hint');
-  if (hint) {
-    hint.style.opacity = '1';
-    clearTimeout(hint._t);
-    hint._t = setTimeout(() => { hint.style.opacity = ''; }, 600);
-  }
-  if (JSON.stringify(tseq) === JSON.stringify(KONAMI_TOUCH)) {
-    tseq = [];
-    toggleKonami();
-  }
+// ═══════════════════════════════════════════════
+// RICK — USER-INITIATED CLICK (no popup blocker)
+// ═══════════════════════════════════════════════
+let rickInt;
+function showRick(){
+  unlockAch('rick');
+  const rs=document.getElementById('rick-screen');rs.classList.add('show');
+  document.getElementById('rick-count').style.display='block';
+  document.getElementById('rick-prize-btn').style.display='none';
+  document.getElementById('rick-close').style.display='none';
+  document.getElementById('rick-msg').textContent='Preparing your reward...';
+  let count=3;document.getElementById('rick-count').textContent=count;
+  rickInt=setInterval(()=>{
+    count--;
+    if(count>0){document.getElementById('rick-count').textContent=count}
+    else{
+      clearInterval(rickInt);
+      document.getElementById('rick-count').style.display='none';
+      document.getElementById('rick-msg').textContent='Never gonna give you up 🎵';
+      document.getElementById('rick-prize-btn').style.display='block';
+      document.getElementById('rick-close').style.display='block';
+      attachClickables();
+    }
+  },1000);
 }
+function closeRick(){clearInterval(rickInt);document.getElementById('rick-screen').classList.remove('show')}
 
-document.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  const absDx = Math.abs(dx), absDy = Math.abs(dy);
-  const minSwipe = 40; // px threshold
-
-  if (absDx < minSwipe && absDy < minSwipe) {
-    // it's a tap, not a swipe
-    const now = Date.now();
-    // only count taps when we're at the tap stage (last 2 in sequence)
-    // or always push tap — sequence matching handles correctness
-    pushTouch('tap');
-  } else if (absDy > absDx) {
-    // vertical swipe
-    pushTouch(dy < 0 ? 'up' : 'down');
-  } else {
-    // horizontal swipe
-    pushTouch(dx < 0 ? 'left' : 'right');
-  }
-}, { passive: true });
-
-// ── SECRET DRAGON ────────────────────────────────────────────────────
-function triggerDragon() {
-  const ov = document.getElementById('dragon-overlay');
-  ov.classList.add('active');
-  playDragon();
+// ═══════════════════════════════════════════════
+// CREDITS + POST-CREDITS QUIZ
+// ═══════════════════════════════════════════════
+function showCredits(){
+  unlockAch('credits');
+  const o=document.getElementById('credits-overlay');o.classList.add('show');
+  const sc=document.getElementById('credits-scroll');sc.style.animation='none';void sc.offsetHeight;sc.style.animation='creditsRoll 65s linear forwards';
+  document.getElementById('credits-skip').style.display='block';
+  attachClickables();
+  // After credits end, show quiz
+  sc.addEventListener('animationend',()=>{closeCredits();setTimeout(()=>startQuiz(),800)},{once:true});
 }
-function closeDragon() {
-  document.getElementById('dragon-overlay').classList.remove('active');
+function closeCredits(){document.getElementById('credits-overlay').classList.remove('show');document.getElementById('credits-skip').style.display='none'}
+
+// ═══════════════════════════════════════════════
+// MEME QUIZ
+// ═══════════════════════════════════════════════
+const MEME_QS=[
+  {q:'What is 9 + 10?',opts:['19','21','11','90'],ans:1,note:'TWENTY ONE. Not 19. Classic.'},
+  {q:'"Are you ready kids?" is from what show?',opts:['Dora the Explorer','SpongeBob SquarePants','Rugrats','Teletubbies'],ans:1,note:'AYE AYE CAPTAIN. SpongeBob forever.'},
+  {q:'"All your base are belong to us" is from what game?',opts:['Street Fighter','Zero Wing','Sonic','Doom'],ans:1,note:'Zero Wing. 1992. The meme that started it all.'},
+  {q:'Rick Astley: Never Gonna Give You ___',opts:['Up','Down','In','Back'],ans:0,note:'UP. You literally just got rickrolled playing this game.'},
+  {q:'"I can haz cheezburger?" features what animal?',opts:['Dog','Cat','Hamster','Raccoon'],ans:1,note:'Cat. Obviously. The OG of internet animals.'},
+  {q:'"One does not simply ___ into Mordor."',opts:['Teleport','Run','Walk','Skip'],ans:2,note:'WALK. Boromir. Lord of the Rings. Eternal meme.'},
+  {q:'The "This is fine." dog is sitting in ___',opts:['Rain','Fire','Mud','A meeting'],ans:1,note:'FIRE. He is fine. Everything is fine.'},
+  {q:'"Numa Numa" guy was lip-syncing in which language?',opts:['Italian','French','Romanian','Spanish'],ans:2,note:'Romanian. "Dragostea Din Tei" by O-Zone. A classic.'},
+];
+let quizIdx=0,quizScore=0,quizAnswered=false;
+function startQuiz(){
+  quizIdx=0;quizScore=0;quizAnswered=false;
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-q').style.display='block';
+  document.getElementById('quiz-opts').style.display='grid';
+  document.getElementById('quiz-next').style.display='none';
+  document.getElementById('quiz-feedback').textContent='';
+  document.getElementById('quiz-overlay').classList.add('show');
+  renderQuiz();
+  attachClickables();
+  toast('🧠','The Dragon\'s Final Test begins...','quiz_start');
 }
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeDragon();
+function renderQuiz(){
+  const q=MEME_QS[quizIdx];quizAnswered=false;
+  document.getElementById('quiz-counter').textContent=`QUESTION ${quizIdx+1} / ${MEME_QS.length}`;
+  document.getElementById('quiz-q').textContent=q.q;
+  document.getElementById('quiz-feedback').textContent='';
+  document.getElementById('quiz-next').style.display='none';
+  const opts=document.getElementById('quiz-opts');
+  opts.innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt clickable" onclick="quizAnswer(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join('');
+  attachClickables();
+}
+function quizAnswer(i){
+  if(quizAnswered)return;quizAnswered=true;
+  const q=MEME_QS[quizIdx];const correct=i===q.ans;if(correct)quizScore++;
+  document.querySelectorAll('.quiz-opt').forEach((b,idx)=>{
+    b.classList.remove('correct','wrong','reveal');
+    if(idx===q.ans)b.classList.add('correct');
+    else if(idx===i&&!correct)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('quiz-feedback');
+  fb.style.color=correct?'#00ff41':'#ff153f';
+  fb.textContent=(correct?'✓ CORRECT! ':'✗ WRONG! ')+q.note;
+  document.getElementById('quiz-next').style.display='block';
+  spawnBurst(window.innerWidth/2,window.innerHeight/2,correct?['#00ff41','#ffffff']:['#ff153f','#ff6030']);
+}
+function quizNext(){
+  quizIdx++;
+  if(quizIdx>=MEME_QS.length){showQuizResult();return}
+  renderQuiz();
+}
+function showQuizResult(){
+  document.getElementById('quiz-q').style.display='none';
+  document.getElementById('quiz-opts').style.display='none';
+  document.getElementById('quiz-next').style.display='none';
+  document.getElementById('quiz-feedback').textContent='';
+  document.getElementById('quiz-counter').textContent='RESULTS';
+  const pct=quizScore/MEME_QS.length;
+  const msgs=[
+    [0,.4,'I hate new brainrot AND you apparently don\'t know old school either. Go outside. Touch grass. Twice.'],
+    [.4,.6,'You know some memes. Mediocre at best. Just like your MLBB wr. Also go watch more SpongeBob.'],
+    [.6,.8,'Decent. Shockingly. The Dragon acknowledges your internet heritage. Acceptable.'],
+    [.8,1,'ACTUAL MEME SCHOLAR. The Dragon is impressed. You and I are built different. Follow me for ragebait tips.'],
+    [1,1.1,'PERFECT SCORE. You are a relic of the old internet. I respect you. I hate new brainrot. You get it.'],
+  ];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi);
+  document.getElementById('quiz-score-title').textContent=`${quizScore} / ${MEME_QS.length}`;
+  document.getElementById('quiz-score-msg').textContent=msg?msg[2]:'not bad.';
+  document.getElementById('quiz-result').style.display='flex';
+  unlockAch('quiz');
+  attachClickables();
+}
+function closeQuiz(){document.getElementById('quiz-overlay').classList.remove('show')}
+
+// ═══════════════════════════════════════════════
+// TERMINAL WITH HISTORY + VISUAL CMDS
+// ═══════════════════════════════════════════════
+const termHistory=[];let histIdx=-1;
+const TERM_CMDS={
+  help:()=>{
+    const cmds=['help','about','projects','ggmu','goat','mlbb','sleep','dragon','konami','credits','clear'];
+    const out=document.getElementById('term-output');
+    cmds.forEach((c,i)=>setTimeout(()=>{out.innerHTML+=`<div style="color:var(--accent);padding-left:1rem">→ ${c}</div>`;out.scrollTop=out.scrollHeight},i*80));
+    return null;
+  },
+  about:()=>`<span style="color:#e8b85b">怠竜 Tearyū</span>\nBSc IT · Biratnagar, Nepal 🇳🇵\nNepali · Filipino/Spanish/Chinese\nBuilds things way more complex than needed.\nAt 3AM. Always. Zero frameworks. One file.`,
+  projects:()=>{fxProjects();return`<span style="color:var(--accent)">// Scrolling to projects and highlighting them... //</span>\n<a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" style="color:var(--accent)">NavalStrike ↗</a>\n<a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" style="color:var(--accent)">TicTacToe ↗</a>\n<a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" style="color:var(--accent)">Deadshot Crosshair ↗</a>`},
+  ggmu:()=>{fxGgmu();return`<span style="color:#ff0000;font-size:1.1em">⚽ GLORY GLORY MAN UNITED ⚽</span>\nFuck oil money. We are Manchester. The real one.\nRooney. Scholes. Giggs. Fergie. CANTONA.\nGGMU forever. No matter what. 🔴`},
+  goat:()=>{fxGoat();return`<span style="color:#e8b85b">🐐 THE GOAT DEBATE 🐐</span>\nFootball: Messi. GOAT. Not up for debate.\nBut Ronaldo defied nature. CR7 forever.\n(Two GOATs different era. Both valid.)\nBasketball: MJ. 6-0. Sealed.\nBut LeBron? Generational. Respect.`},
+  mlbb:()=>`<span style="color:var(--accent)">// MOBILE LEGENDS STATS //</span>\nMain: 怠竜Taeryū · 1680765500 (18127)\nMythic ⭐52 peak · Roam Main 🛡️\n1,369 matches\n\nRetired: 龍神 RyŪjin · 1992586716 (19366)\n<span style="color:#e8b85b">Alucard WR: 95.2% 🩸 · 49 matches · Epic</span>\nAngry at MLBB daily. Will still play tomorrow.`,
+  sleep:()=>{fxSleep();return`<span style="color:var(--dim)">initiating sleep protocol...</span>\nsleep: false\n# 3AM. Code not done.\n# Dragon does not sleep.\n# (Dragon is very tired though)\n<span style="color:var(--dim)">...sleep rejected.</span>`},
+  dragon:()=>toggleDragonTheme(),
+  konami:()=>{fxKonami();return`<span style="color:#00ff41">MATRIX ${matrixActive?'ACTIVATED ↑↑↓↓←→←→BA':'DEACTIVATED'}</span>`},
+  credits:()=>{showCredits();return`<span style="color:var(--accent)">// Rolling credits (65 seconds)... //</span>\nStay until the end for a surprise.\nTip: there's a quiz after. I hate new brainrot.`},
+  clear:()=>{document.getElementById('term-output').innerHTML='';return null},
+};
+
+const termInput=document.getElementById('term-input');
+termInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const cmd=termInput.value.trim().toLowerCase();termInput.value='';histIdx=-1;
+    if(cmd)termHistory.unshift(cmd);
+    const out=document.getElementById('term-output');
+    out.innerHTML+=`<div style="color:var(--accent)">$ ${cmd}</div>`;
+    if(TERM_CMDS[cmd]){const r=TERM_CMDS[cmd]();if(r!=null)out.innerHTML+=`<div style="margin-bottom:.5rem;white-space:pre-line">${r}</div>`}
+    else if(cmd)out.innerHTML+=`<div style="color:var(--danger);margin-bottom:.5rem">command not found: ${cmd}. try 'help'</div>`;
+    out.scrollTop=out.scrollHeight;
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();if(termHistory.length){histIdx=Math.min(histIdx+1,termHistory.length-1);termInput.value=termHistory[histIdx];unlockAch('history')}
+  } else if(e.key==='ArrowDown'){
+    e.preventDefault();histIdx=Math.max(histIdx-1,-1);termInput.value=histIdx>=0?termHistory[histIdx]:'';
+  } else if(e.key==='Escape'){closeTerm()}
 });
+document.addEventListener('keydown',e=>{
+  if(e.key==='`'||e.key==='~'){e.preventDefault();const t=document.getElementById('dev-terminal');t.classList.toggle('show');if(t.classList.contains('show')){termInput.focus();unlockAch('terminal');toast('💻','Terminal ready. Type "help"','term_o')}}
+});
+function closeTerm(){document.getElementById('dev-terminal').classList.remove('show')}
 
-// ── MLBB TABS ────────────────────────────────────────────────────────
-function switchTab(idx) {
-  document.querySelectorAll('.mlbb-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
-  document.querySelectorAll('.mlbb-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
-}
+// ═══════════════════════════════════════════════
+// MLBB TABS
+// ═══════════════════════════════════════════════
+function switchTab(idx){document.querySelectorAll('.mlbb-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));document.querySelectorAll('.mlbb-panel').forEach((p,i)=>p.classList.toggle('active',i===idx))}
 </script>
 </body>
 </html>
