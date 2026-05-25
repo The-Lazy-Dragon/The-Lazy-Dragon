@@ -136,6 +136,15 @@ section{padding:6rem 3rem;max-width:1100px;margin:0 auto}
 #credits-overlay.show{display:flex}
 #credits-scroll{position:absolute;bottom:-100%;width:100%;max-width:700px;text-align:center;padding:2rem;animation:creditsRoll 65s linear forwards}
 @keyframes creditsRoll{from{transform:translateY(0)}to{transform:translateY(calc(-100% - 100vh))}}
+/* COLOR PICKER (unlocks when all achievements done) */
+#color-picker{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9996;background:var(--panel2);border:1px solid var(--accent);padding:1.5rem;display:none;min-width:260px;box-shadow:var(--glow)}
+#color-picker.show{display:block}
+.cp-header{font-size:.65rem;letter-spacing:3px;color:var(--accent);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.cp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;font-size:.7rem;letter-spacing:1px;color:var(--dim)}
+.cp-row input[type=color]{width:36px;height:24px;border:1px solid var(--mid);background:transparent;cursor:none;border-radius:2px}
+.cp-row input[type=range]{width:120px;accent-color:var(--accent)}
+#cp-close{font-size:.6rem;letter-spacing:2px;cursor:none;color:var(--dim);border:none;background:transparent;font-family:'Share Tech Mono',monospace}
+#cp-close:hover{color:var(--danger)}
 .cr-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.4rem,4vw,2.5rem);font-weight:900;color:var(--accent);text-shadow:var(--glow);letter-spacing:6px;margin-bottom:.5rem}
 .cr-sub{font-size:.75rem;color:var(--dim);letter-spacing:3px;margin-bottom:3rem}
 .cr-section{margin:2.5rem 0}
@@ -302,8 +311,9 @@ footer a:hover{text-decoration:underline}
       <div class="gs-title" style="color:var(--accent)">CHOOSE<br>YOUR FATE</div>
       <div class="gs-sub">Two games. One pride.<br>D-Pad / swipe on canvas for mobile.</div>
       <div class="gs-btn-row">
-        <button class="gs-btn red clickable" onclick="selectGame('dragon')">⚔ DRAGON<br><span style="font-size:.58rem;opacity:.7">Dodge fireballs · 10s</span></button>
-        <button class="gs-btn clickable" onclick="selectGame('snake')">🐍 SNAKE<br><span style="font-size:.58rem;opacity:.7">Eat food · Score 80 to win</span></button>
+        <button class="gs-btn red clickable" onclick="selectGame('dragon')">⚔ DRAGON<br><span style="font-size:.58rem;opacity:.7">Dodge fireballs · 10s · Easy</span></button>
+        <button class="gs-btn clickable" onclick="selectGame('breakout')" style="border-color:#e8b85b;color:#e8b85b">🧱 BREAKOUT<br><span style="font-size:.58rem;opacity:.7">Break bricks · Medium</span></button>
+        <button class="gs-btn clickable" onclick="selectGame('snake')">🐍 SNAKE<br><span style="font-size:.58rem;opacity:.7">Score 80 to win · Hard</span></button>
       </div>
     </div>
     <div id="game-over-screen" class="game-screen">
@@ -313,6 +323,11 @@ footer a:hover{text-decoration:underline}
         <button class="gs-btn red clickable" onclick="restartCurrent()">[ TRY AGAIN ]</button>
         <button class="gs-btn clickable" onclick="showSelectScreen()">[ BACK ]</button>
       </div>
+    </div>
+    <div id="game-lore-screen" class="game-screen">
+      <div class="gs-title" style="color:var(--accent);font-size:clamp(.8rem,3vw,1.2rem)">// LORE DROP //</div>
+      <div class="gs-sub" id="lore-text" style="color:var(--text);font-size:.72rem;line-height:2;max-width:300px"></div>
+      <button class="gs-btn clickable" onclick="proceedToWin()">[ CLAIM PRIZE → ]</button>
     </div>
     <div id="game-win-screen" class="game-screen">
       <div class="gs-title" style="color:var(--accent)">YOU WIN!</div>
@@ -337,14 +352,16 @@ footer a:hover{text-decoration:underline}
   <div id="rick-title">🎉 CONGRATULATIONS BRAVE ADVENTURER 🎉<br><span style="font-family:'Share Tech Mono';font-size:.72rem;letter-spacing:2px">// your prize is loading //</span></div>
   <div id="rick-count">3</div>
   <div id="rick-msg">Preparing your reward...</div>
-  <a id="rick-prize-btn" href="https://www.youtube.com/watch?v=RrESvSRNpeo" target="_blank" rel="noopener" class="clickable">🎵 CLAIM YOUR PRIZE →</a>
-  <a id="rick-close" href="#" class="clickable" onclick="closeRick();return false">[ i knew it. close. ]</a>
+  <iframe id="rick-frame" style="display:none;width:min(560px,90vw);aspect-ratio:16/9;border:2px solid var(--danger);box-shadow:var(--glow-red)" src="" frameborder="0" allow="autoplay;encrypted-media;fullscreen" allowfullscreen></iframe>
+  <div id="rick-redirect-msg" style="display:none;font-size:.8rem;letter-spacing:2px;color:var(--accent);text-align:center;max-width:400px;line-height:2">🎵 You've been rickrolled.<br><span style="color:var(--dim);font-size:.7rem">Opening in a new tab because YouTube hates fun.</span></div>
+  <a id="rick-prize-btn" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener" class="clickable" style="display:none;font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:3px;padding:.9rem 2rem;background:var(--danger);color:#fff;border:none;text-transform:uppercase;animation:orbPulse 1.5s infinite;box-shadow:var(--glow-red);text-decoration:none">🎵 OPEN RICKROLL ↗</a>
+  <a id="rick-close" href="#" class="clickable" onclick="closeRick();return false" style="display:none">[ i knew it. close. ]</a>
 </div>
 
 <!-- CREDITS -->
 <div id="credits-overlay">
   <div id="credits-scroll">
-    <div class="cr-title">怠竜 TEARYŪ</div>
+    <div style="height:100vh"></div><!-- spacer so first line isn't cut off -->
     <div class="cr-sub">// a film by The Lazy Dragon //</div>
     <div class="cr-divider"></div>
     <div class="cr-section"><div class="cr-role">Written · Directed · Coded · Designed by</div><div class="cr-name gold">怠竜 TEARYŪ</div><div class="cr-name gold">THE LAZY DRAGON</div></div>
@@ -352,7 +369,8 @@ footer a:hover{text-decoration:underline}
     <div class="cr-section"><div class="cr-role">Produced at</div><div class="cr-name">3:00 AM – 4:00 AM</div><div class="cr-note">multiple nights<br>no sleep was harmed<br>(sleep was absolutely harmed)</div></div>
     <div class="cr-divider"></div>
     <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">Man United FC</div><div class="cr-note">for the ongoing emotional damage<br>GGMU regardless. Forever red.</div></div>
-    <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">Lionel Messi</div><div class="cr-note">the undisputed GOAT<br>also Ronaldo defied nature itself<br>two legends. one argument.</div></div>
+    <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">Lionel Messi</div><div class="cr-note">the undisputed GOAT. full stop.<br>no argument. no debate.</div></div>
+    <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">Cristiano Ronaldo</div><div class="cr-note">GOAT of Scoring and Longevity.<br>CR7 defied nature itself.<br>two different legends. both deserve a nod.</div></div>
     <div class="cr-section"><div class="cr-role">Special Thanks</div><div class="cr-name cyan">LeBron James</div><div class="cr-note">the real deal<br>MJ is still GOAT tho<br>6-0. not up for debate.</div></div>
     <div class="cr-divider"></div>
     <div class="cr-section"><div class="cr-role">Debugging Assistant</div><div class="cr-name" style="color:var(--dim)">Claude (Anthropic)</div><div class="cr-note">claims 40% of the credit<br>deserves approximately 0%<br>genuinely helpful though.<br>(don't tell it i said that)</div></div>
@@ -385,6 +403,17 @@ footer a:hover{text-decoration:underline}
     <div class="quiz-score-msg" id="quiz-score-msg"></div>
     <button id="quiz-close" class="clickable" onclick="closeQuiz()">[ CLOSE ]</button>
   </div>
+</div>
+
+<!-- COLOR PICKER -->
+<div id="color-picker">
+  <div class="cp-header">// SITE COLORS //<button id="cp-close" onclick="document.getElementById('color-picker').classList.remove('show')">[ × ]</button></div>
+  <div class="cp-row">Accent<input type="color" id="cp-accent" value="#00fff7" oninput="applyColor('--accent',this.value)"></div>
+  <div class="cp-row">Danger<input type="color" id="cp-danger" value="#ff153f" oninput="applyColor('--danger',this.value)"></div>
+  <div class="cp-row">Background<input type="color" id="cp-bg" value="#182433" oninput="applyColor('--bg',this.value)"></div>
+  <div class="cp-row">Panel<input type="color" id="cp-panel" value="#1e2e42" oninput="applyColor('--panel',this.value)"></div>
+  <div class="cp-row">Text<input type="color" id="cp-text" value="#c8e6f0" oninput="applyColor('--text',this.value)"></div>
+  <div class="cp-row" style="margin-top:1rem;justify-content:center"><button style="font-family:'Share Tech Mono';font-size:.65rem;letter-spacing:2px;padding:.4rem 1rem;border:1px solid var(--mid);color:var(--dim);background:transparent;cursor:none" onclick="resetColors()">RESET DEFAULTS</button></div>
 </div>
 
 <!-- TERMINAL -->
@@ -461,9 +490,9 @@ footer a:hover{text-decoration:underline}
       </div>
     </div>
     <div class="project-card reveal" id="card-cross">
-      <div class="project-icon">🎯</div><div class="project-name">Deadshot Crosshair</div><div class="project-version">v1.1.2</div>
-      <div class="project-desc">Chrome extension for deadshot.io. 15+ crosshair shapes, psychedelic mode, FPS/ping HUD, key tracker. No Tampermonkey. No BS.</div>
-      <div class="project-badges"><span class="badge cyan">Chrome Extension</span><span class="badge">15+ Shapes</span><span class="badge red">Psychedelic Mode</span></div>
+      <div class="project-icon">🎯</div><div class="project-name">Deadshot Crosshair</div><div class="project-version">v2.1 — The Motion Update</div>
+      <div class="project-desc">Chrome extension for deadshot.io. 15+ shapes, custom images (4 modes), spin + breathe motion, hit markers, 5-slot presets with export codes, psychedelic mode, FPS/HUD. Android APK + iOS Orion support. No Tampermonkey.</div>
+      <div class="project-badges"><span class="badge cyan">Chrome Extension</span><span class="badge">Custom Images</span><span class="badge red">Spin + Breathe</span><span class="badge">Presets</span><span class="badge">Android + iOS</span></div>
       <div class="project-links"><a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" rel="noopener" class="proj-link clickable">GitHub ↗</a></div>
     </div>
   </div>
@@ -591,6 +620,7 @@ document.addEventListener('click',e=>{
   // For hash/scroll links — add delay
   if(href&&href.startsWith('#')&&!link.target){
     e.preventDefault();
+    if(href.length===1)return; // bare '#' — nothing to scroll to
     cursor.classList.add('loading-state');
     const target=document.querySelector(href);
     setTimeout(()=>{cursor.classList.remove('loading-state');target?.scrollIntoView({behavior:'smooth'})},900);
@@ -646,6 +676,30 @@ function fxProjects(){
   setTimeout(()=>{['card-naval','card-ttt','card-cross'].forEach((id,i)=>{setTimeout(()=>{const c=document.getElementById(id);c.classList.add('glow-highlight');setTimeout(()=>c.classList.remove('glow-highlight'),600)},i*200)})},600);
 }
 function fxKonami(){toggleKonami();burstAll(['#00ff41','#00fff7'])}
+function fxMlbb(){
+  // Cyan/gold flash + burst + MLBB-style rank sound
+  flashScreen('#00fff7',400);
+  setTimeout(()=>flashScreen('#e8b85b',400),500);
+  burstAll(['#00fff7','#e8b85b','#ffffff']);
+  try{const c=getCtx();[330,415,494,659,830].forEach((f,i)=>tone(f,'sine',.12,.3,c.currentTime+i*.1))}catch(e){}
+  toast('🛡️','ROAM DIFF','mlbb_fx');
+}
+
+// SNAKE LORE DROP
+const SNAKE_LORE=[
+  `You scored 80.\n\nThe grid remembers every path you took.\n80 is not just a number here.\n\nWhen the dragon first built this place,\nhe played snake alone at 3AM.\nHe won thrice. Only thrice.\nOnce at 25x25. Got stuck at 68.\nDied at 71. Won on the third attempt.\n\nYou just did what took him weeks.\n\nThe dragon is... not annoyed.\n(The dragon is a little annoyed.)\nClaim your prize.`
+];
+function showSnakeLore(){
+  hideAllScreens();
+  document.getElementById('lore-text').style.whiteSpace='pre-line';
+  document.getElementById('lore-text').textContent=SNAKE_LORE[0];
+  document.getElementById('game-lore-screen').classList.add('show');
+  attachClickables();
+}
+function proceedToWin(){
+  hideAllScreens();
+  gameWin();
+}
 
 // ═══════════════════════════════════════════════
 // TYPEWRITER
@@ -700,24 +754,39 @@ document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tS
 // ═══════════════════════════════════════════════
 let achSystemActive=false;
 const ACHIEVEMENTS=[
-  {id:'konami',icon:'🔴',name:'MATRIX PROTOCOL',desc:'Activate the Konami code'},
-  {id:'terminal',icon:'💻',name:'CONNECTED',desc:'Open the secret terminal'},
-  {id:'history',icon:'📜',name:'HISTORIAN',desc:'Navigate terminal history (↑ key)'},
-  {id:'dragon_cmd',icon:'🔴',name:'DRAGON MODE',desc:'Type "dragon" in terminal'},
-  {id:'game_open',icon:'⚔️',name:'CHALLENGER',desc:'Open the Gauntlet'},
-  {id:'snake',icon:'🐍',name:'SNAKE CHARMER',desc:'Play Snake'},
-  {id:'win',icon:'🏆',name:'DRAGON SLAYER',desc:'Beat the Gauntlet'},
-  {id:'rick',icon:'🎵',name:'RICKROLLED',desc:'Claim your prize'},
-  {id:'credits',icon:'🎬',name:'ROLL CREDITS',desc:'Watch the credits'},
-  {id:'quiz',icon:'🧠',name:'MEME SCHOLAR',desc:'Complete the post-credits quiz'},
-  {id:'binary',icon:'🔢',name:'BINARY',desc:'Switch to binary rain'},
-  {id:'katakana',icon:'カ',name:'KATAKANA',desc:'Switch to katakana rain'},
-  {id:'nightowl',icon:'🌙',name:'NIGHT OWL',desc:'Visit between midnight and 5AM'},
-  {id:'orb',icon:'🐉',name:'ORB SEEKER',desc:'Hover the secret orb'},
-  {id:'skill',icon:'☠️',name:'SKILL ISSUE',desc:'Die in the Gauntlet'},
+  {id:'konami',    icon:'🔴',name:'MATRIX PROTOCOL',    desc:'Activate the Konami code'},
+  {id:'terminal',  icon:'💻',name:'CONNECTED',           desc:'Open the secret terminal'},
+  {id:'history',   icon:'📜',name:'HISTORIAN',           desc:'Navigate terminal history (↑ key)'},
+  {id:'dragon_cmd',icon:'🔴',name:'DRAGON MODE',         desc:'Type "dragon" in terminal'},
+  {id:'game_open', icon:'⚔️',name:'CHALLENGER',          desc:'Open the Gauntlet'},
+  {id:'snake',     icon:'🐍',name:'SNAKE CHARMER',       desc:'Play Snake'},
+  {id:'breakout',  icon:'🧱',name:'BRICK BREAKER',       desc:'Play Breakout'},
+  {id:'win',       icon:'🏆',name:'DRAGON SLAYER',       desc:'Beat the Dragon Gauntlet'},
+  {id:'snake_win', icon:'🏅',name:'SNAKE MASTER',        desc:'Beat Snake (score 80). RIP your thumbs.'},
+  {id:'break_win', icon:'💥',name:'DEMOLITION MAN',      desc:'Clear all bricks in Breakout'},
+  {id:'rick',      icon:'🎵',name:'RICKROLLED',          desc:'Claim your prize'},
+  {id:'credits',   icon:'🎬',name:'ROLL CREDITS',        desc:'Watch the credits'},
+  {id:'quiz',      icon:'🧠',name:'MEME SCHOLAR',        desc:'Complete the post-credits quiz'},
+  {id:'quiz_perf', icon:'🎓',name:'INTERNET LEGEND',     desc:'Perfect score on the meme quiz'},
+  {id:'binary',    icon:'🔢',name:'BINARY',              desc:'Switch to binary rain'},
+  {id:'katakana',  icon:'カ', name:'KATAKANA',           desc:'Switch to katakana rain'},
+  {id:'nightowl',  icon:'🌙',name:'NIGHT OWL',           desc:'Visit between midnight and 5AM'},
+  {id:'orb',       icon:'🐉',name:'ORB SEEKER',          desc:'Hover the secret orb'},
+  {id:'skill',     icon:'☠️',name:'SKILL ISSUE',         desc:'Die in the Dragon Gauntlet'},
+  {id:'snake_s5',  icon:'🌱',name:'WARM UP',             desc:'Score 5 in Snake'},
+  {id:'snake_s20', icon:'⚡',name:'GETTING THERE',       desc:'Score 20 in Snake'},
+  {id:'snake_s40', icon:'🔥',name:'LOCK IN',             desc:'Score 40 in Snake'},
+  {id:'snake_s60', icon:'💀',name:'DANGER ZONE',         desc:'Score 60 in Snake — almost there'},
+  {id:'colors',    icon:'🎨',name:'PAINTER',             desc:'Unlock the site color picker'},
 ];
 const unlockedAchs=new Set();
-function unlockAch(id){if(!achSystemActive&&id!=='konami')return;if(unlockedAchs.has(id))return;unlockedAchs.add(id);const a=ACHIEVEMENTS.find(x=>x.id===id);if(a){toast(a.icon,`ACHIEVEMENT: ${a.name}`,'a_'+id);renderAchList()}}
+function unlockAch(id){if(!achSystemActive&&id!=='konami')return;if(unlockedAchs.has(id))return;unlockedAchs.add(id);const a=ACHIEVEMENTS.find(x=>x.id===id);if(a){toast(a.icon,`ACHIEVEMENT: ${a.name}`,'a_'+id);renderAchList()}
+  // Check if all achievements done → unlock color picker
+  const allIds=ACHIEVEMENTS.map(x=>x.id);
+  if(allIds.every(i=>unlockedAchs.has(i))){
+    unlockColorPicker();
+  }
+}
 function renderAchList(){const list=document.getElementById('ach-list');list.innerHTML=ACHIEVEMENTS.map(a=>`<div class="ach-item${unlockedAchs.has(a.id)?'':' locked'}"><span class="ach-icon">${a.icon}</span><div><div class="ach-name">${a.name}</div><div class="ach-desc">${unlockedAchs.has(a.id)?a.desc:'???'}</div></div></div>`).join('')}
 function toggleAchPanel(){document.getElementById('ach-modal').classList.toggle('show');renderAchList()}
 document.getElementById('secret-orb').addEventListener('mouseenter',()=>{unlockAch('orb');toast('🐉','The 龍 stirs...','orb_h')},{once:true});
@@ -756,7 +825,7 @@ const DRAGON_MSGS=[
 ];
 
 const D={active:false,phase:'idle',raf:null,player:{x:GW/2-20,y:GH-70,w:38,h:38,speed:5},enemies:[],lives:3,timer:10,lastTime:0,spawnTimer:0,keys:{},invTimer:0};
-function dragonStart(){D.player={x:GW/2-20,y:GH-70,w:38,h:38,speed:5};D.enemies=[];D.lives=3;D.timer=10;D.lastTime=performance.now();D.spawnTimer=0;D.keys={};D.invTimer=0;D.phase='playing';if(!D.active){D.active=true;requestAnimationFrame(t=>dragonLoop(t))}}
+function dragonStart(){if(D.raf)cancelAnimationFrame(D.raf);D.raf=null;D.player={x:GW/2-20,y:GH-70,w:38,h:38,speed:5};D.enemies=[];D.lives=3;D.timer=10;D.lastTime=performance.now();D.spawnTimer=0;D.keys={};D.invTimer=0;D.phase='playing';D.active=true;D.raf=requestAnimationFrame(t=>dragonLoop(t))}
 function dragonLoop(now){
   if(!D.active||currentGame!=='dragon')return;
   if(D.phase==='playing'){
@@ -791,8 +860,8 @@ function dragonDraw(){
 }
 function gameDragonLose(){D.active=false;cancelAnimationFrame(D.raf);document.getElementById('go-msg').textContent='skill issue bro. stick to watching people play.';document.getElementById('game-over-screen').classList.add('show')}
 
-// SNAKE (bigger grid: 10 cols x 12 rows, ~34px cells)
-const SN_COLS=10,SN_ROWS=12,SN_CW=Math.floor(GW/SN_COLS),SN_CH=Math.floor(GH/SN_ROWS);
+// SNAKE 20x20 grid, speed cap at 100ms
+const SN_COLS=16,SN_ROWS=16,SN_CW=Math.floor(GW/16),SN_CH=Math.floor(GH/16);
 const SN={active:false,raf:null,snake:[],dir:{x:1,y:0},nextDir:{x:1,y:0},food:{x:5,y:5},score:0,lastMove:0,interval:180,tSX:0,tSY:0};
 const SNAKE_MSGS=[
   {min:0,  max:5,  msg:'stick to snake and ladders, kid. seriously.'},
@@ -808,9 +877,10 @@ const SNAKE_MSGS=[
 ];
 function getSnakeMsg(score){const m=SNAKE_MSGS.find(x=>score>=x.min&&score<x.max);return m?m.msg:'ok. not bad.'}
 function snakeStart(){
+  if(SN.raf)cancelAnimationFrame(SN.raf);SN.raf=null;
   const mx=Math.floor(SN_COLS/2),my=Math.floor(SN_ROWS/2);
-  SN.snake=[{x:mx,y:my},{x:mx-1,y:my},{x:mx-2,y:my}];SN.dir={x:1,y:0};SN.nextDir={x:1,y:0};SN.score=0;SN.lastMove=0;SN.interval=180;snakeFood();
-  if(!SN.active){SN.active=true;requestAnimationFrame(t=>snakeLoop(t))}
+  SN.snake=[{x:mx,y:my},{x:mx-1,y:my},{x:mx-2,y:my}];SN.dir={x:1,y:0};SN.nextDir={x:1,y:0};SN.score=0;SN.lastMove=0;SN.interval=200;snakeFood();
+  SN.active=true;SN.raf=requestAnimationFrame(t=>snakeLoop(t));
 }
 function snakeFood(){let p;do{p={x:Math.floor(Math.random()*SN_COLS),y:Math.floor(Math.random()*SN_ROWS)}}while(SN.snake.some(s=>s.x===p.x&&s.y===p.y));SN.food=p}
 function snakeLoop(now){
@@ -820,7 +890,13 @@ function snakeLoop(now){
     const h={x:(SN.snake[0].x+SN.dir.x+SN_COLS)%SN_COLS,y:(SN.snake[0].y+SN.dir.y+SN_ROWS)%SN_ROWS};
     if(SN.snake.some(s=>s.x===h.x&&s.y===h.y)){snakeLose();return}
     SN.snake.unshift(h);
-    if(h.x===SN.food.x&&h.y===SN.food.y){SN.score++;SN.interval=Math.max(70,SN.interval-4);snakeFood();if(SN.score>=80){snakeWin();return}}
+    if(h.x===SN.food.x&&h.y===SN.food.y){SN.score++;SN.interval=Math.max(100,SN.interval-2);snakeFood();
+      // score achievements
+      if(SN.score===5)unlockAch('snake_s5');
+      if(SN.score===20)unlockAch('snake_s20');
+      if(SN.score===40)unlockAch('snake_s40');
+      if(SN.score===60)unlockAch('snake_s60');
+      if(SN.score>=80){snakeWin();return}}
     else SN.snake.pop();
     snakeDraw();
   }
@@ -838,35 +914,122 @@ function snakeDraw(){
   GX.fillStyle='#1a3a1a';GX.fillRect(10,28,GW-20,5);GX.fillStyle='#00ff41';GX.fillRect(10,28,(GW-20)*(SN.score/80),5);
 }
 function snakeLose(){SN.active=false;cancelAnimationFrame(SN.raf);document.getElementById('go-msg').innerHTML=`Score: ${SN.score}<br><span style="font-size:.7rem">${getSnakeMsg(SN.score)}</span>`;document.getElementById('game-over-screen').classList.add('show')}
-function snakeWin(){SN.active=false;cancelAnimationFrame(SN.raf);gameWin()}
+function snakeWin(){SN.active=false;cancelAnimationFrame(SN.raf);unlockAch('snake_win');showSnakeLore()}
 
 // SNAKE canvas swipe
 GC.addEventListener('touchstart',e=>{SN.tSX=e.touches[0].clientX;SN.tSY=e.touches[0].clientY;e.preventDefault()},{passive:false});
 GC.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-SN.tSX,dy=e.changedTouches[0].clientY-SN.tSY;if(Math.abs(dx)<20&&Math.abs(dy)<20)return;if(Math.abs(dx)>Math.abs(dy)){if(dx>0&&SN.dir.x!==-1)SN.nextDir={x:1,y:0};else if(SN.dir.x!==1)SN.nextDir={x:-1,y:0}}else{if(dy>0&&SN.dir.y!==-1)SN.nextDir={x:0,y:1};else if(SN.dir.y!==1)SN.nextDir={x:0,y:-1}}e.preventDefault()},{passive:false});
 
 // STATE MANAGEMENT
-function selectGame(type){hideAllScreens();currentGame=type;document.getElementById('game-sub').textContent=type==='dragon'?'SURVIVE 10s · 3 LIVES · WASD/ARROWS':'EAT FOOD · SCORE 80 TO WIN · SWIPE/WASD';if(type==='dragon'){D.active=false;dragonStart();unlockAch('game_open')}else{SN.active=false;snakeStart();unlockAch('snake')}}
-function restartCurrent(){hideAllScreens();if(currentGame==='dragon'){D.active=false;dragonStart()}else{SN.active=false;snakeStart()}}
-function showSelectScreen(){D.active=false;SN.active=false;currentGame='none';cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);hideAllScreens();document.getElementById('game-select-screen').classList.add('show')}
-function hideAllScreens(){['game-select-screen','game-over-screen','game-win-screen'].forEach(id=>document.getElementById(id).classList.remove('show'))}
-function gameWin(){D.active=false;SN.active=false;cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);playWin();unlockAch('win');hideAllScreens();document.getElementById('game-win-screen').classList.add('show');setTimeout(()=>{document.getElementById('win-bar').style.width='100%'},100);setTimeout(()=>{document.getElementById('win-bar-text').textContent='PRIZE UNLOCKED. OPENING...'},3000);setTimeout(()=>{closeGame();showRick()},3800)}
+function selectGame(type){hideAllScreens();currentGame=type;
+  const subs={dragon:'SURVIVE 10s · 3 LIVES · WASD/ARROWS',breakout:'BREAK ALL BRICKS · 3 LIVES · WASD/ARROWS',snake:'EAT FOOD · SCORE 80 TO WIN · SWIPE/WASD'};
+  document.getElementById('game-sub').textContent=subs[type]||'';
+  if(type==='dragon'){D.active=false;dragonStart();unlockAch('game_open')}
+  else if(type==='breakout'){BR.active=false;brStart();unlockAch('breakout')}
+  else{SN.active=false;snakeStart();unlockAch('snake')}
+}
+function restartCurrent(){hideAllScreens();if(currentGame==='dragon'){D.active=false;dragonStart()}else if(currentGame==='breakout'){BR.active=false;brStart()}else{SN.active=false;snakeStart()}}
+function showSelectScreen(){D.active=false;SN.active=false;BR.active=false;currentGame='none';cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);cancelAnimationFrame(BR.raf);hideAllScreens();document.getElementById('game-select-screen').classList.add('show')}
+function hideAllScreens(){['game-select-screen','game-over-screen','game-win-screen','game-lore-screen'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('show')})}
+let winTimeouts=[];
+function gameWin(){if(currentGame==='none')return;D.active=false;SN.active=false;BR.active=false;cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);cancelAnimationFrame(BR.raf);playWin();unlockAch('win');hideAllScreens();const ws=document.getElementById('game-win-screen');if(ws)ws.classList.add('show');winTimeouts.push(setTimeout(()=>{const wb=document.getElementById('win-bar');if(wb)wb.style.width='100%'},100));winTimeouts.push(setTimeout(()=>{const wt=document.getElementById('win-bar-text');if(wt)wt.textContent='PRIZE UNLOCKED. OPENING...'},3000));winTimeouts.push(setTimeout(()=>{closeGame();showRick()},3800))}
 function startGame(){document.getElementById('dragon-overlay').style.opacity='1';document.getElementById('dragon-overlay').style.pointerEvents='all';showSelectScreen();attachClickables()}
-function closeGame(){D.active=false;SN.active=false;cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);document.getElementById('dragon-overlay').style.opacity='0';document.getElementById('dragon-overlay').style.pointerEvents='none'}
+function closeGame(){winTimeouts.forEach(clearTimeout);winTimeouts=[];D.active=false;SN.active=false;BR.active=false;cancelAnimationFrame(D.raf);cancelAnimationFrame(SN.raf);cancelAnimationFrame(BR.raf);document.getElementById('dragon-overlay').style.opacity='0';document.getElementById('dragon-overlay').style.pointerEvents='none';const wb=document.getElementById('win-bar');if(wb)wb.style.width='0%';}
+
+// ═══════════════════════════════════════════════
+// BREAKOUT (medium difficulty)
+// ═══════════════════════════════════════════════
+const BR_COLS=8,BR_ROWS=5,BR_PX=8,BR_PY=48,BR_BW=Math.floor((GW-BR_PX*2)/BR_COLS),BR_BH=18;
+const BR={active:false,raf:null,paddle:{x:GW/2-45,y:GH-25,w:90,h:11,speed:6},ball:{x:GW/2,y:GH-60,vx:3.5,vy:-4,r:8},bricks:[],lives:3,score:0,launched:false,keys:{}};
+const BR_COLORS=['#ff153f','#ff6030','#ffaa00','#00ff41','#00fff7'];
+function brInit(){BR.bricks=[];for(let r=0;r<BR_ROWS;r++)for(let c=0;c<BR_COLS;c++)BR.bricks.push({x:BR_PX+c*(BR_BW+2),y:BR_PY+r*(BR_BH+5),w:BR_BW-2,h:BR_BH,alive:true,color:BR_COLORS[r]})}
+function brStart(){
+  if(BR.raf)cancelAnimationFrame(BR.raf);BR.raf=null;
+  BR.paddle={x:GW/2-45,y:GH-25,w:90,h:11,speed:6};
+  const a=(-50+Math.random()*100)*Math.PI/180;
+  BR.ball={x:GW/2,y:GH-60,vx:4*Math.sin(a),vy:-4*Math.abs(Math.cos(a)),r:8};
+  BR.lives=3;BR.score=0;BR.launched=false;BR.keys={};brInit();
+  BR.active=true;BR.raf=requestAnimationFrame(t=>brLoop(t));
+}
+function brLoop(now){if(!BR.active||currentGame!=='breakout')return;brUpdate();brDraw();BR.raf=requestAnimationFrame(t=>brLoop(t))}
+function brUpdate(){
+  const p=BR.paddle,b=BR.ball;
+  if(BR.keys['ArrowLeft']||BR.keys['a']||BR.keys['left'])p.x-=p.speed;
+  if(BR.keys['ArrowRight']||BR.keys['d']||BR.keys['right'])p.x+=p.speed;
+  p.x=Math.max(0,Math.min(GW-p.w,p.x));
+  if(!BR.launched){b.x=p.x+p.w/2;b.y=p.y-b.r-2;return}
+  b.x+=b.vx;b.y+=b.vy;
+  if(b.x-b.r<0){b.x=b.r;b.vx=Math.abs(b.vx)}
+  if(b.x+b.r>GW){b.x=GW-b.r;b.vx=-Math.abs(b.vx)}
+  if(b.y-b.r<0){b.y=b.r;b.vy=Math.abs(b.vy)}
+  // Paddle
+  if(b.y+b.r>=p.y&&b.y-b.r<=p.y+p.h&&b.x>=p.x&&b.x<=p.x+p.w&&b.vy>0){
+    const hit=(b.x-p.x)/p.w,ang=(hit-.5)*2.2,sp=Math.hypot(b.vx,b.vy);
+    b.vx=sp*Math.sin(ang);b.vy=-Math.abs(sp*Math.cos(ang));b.y=p.y-b.r;
+  }
+  // Bricks
+  for(const bk of BR.bricks){
+    if(!bk.alive)continue;
+    if(b.x+b.r>bk.x&&b.x-b.r<bk.x+bk.w&&b.y+b.r>bk.y&&b.y-b.r<bk.y+bk.h){
+      bk.alive=false;BR.score++;
+      const oL=b.x+b.r-bk.x,oR=bk.x+bk.w-(b.x-b.r),oT=b.y+b.r-bk.y,oB=bk.y+bk.h-(b.y-b.r);
+      if(Math.min(oT,oB)<Math.min(oL,oR))b.vy*=-1;else b.vx*=-1;
+      const sp=Math.hypot(b.vx,b.vy);if(sp<9){b.vx*=1.03;b.vy*=1.03}
+      spawnBurst(bk.x+bk.w/2,bk.y+bk.h/2,[bk.color,'#ffffff']);
+      break;
+    }
+  }
+  if(BR.bricks.length>0&&BR.bricks.every(bk=>!bk.alive)){brWin();return}
+  if(b.y-b.r>GH){
+    BR.lives--;if(BR.lives<=0){brLose();return}
+    BR.launched=false;b.x=p.x+p.w/2;b.y=p.y-b.r-2;
+    const a=(-50+Math.random()*100)*Math.PI/180,sp=Math.min(Math.hypot(b.vx,b.vy),7);
+    b.vx=sp*Math.sin(a);b.vy=-Math.abs(sp*Math.cos(a));
+  }
+}
+function brDraw(){
+  GX.clearRect(0,0,GW,GH);GX.fillStyle='#060e06';GX.fillRect(0,0,GW,GH);
+  GX.strokeStyle='rgba(0,255,65,.04)';GX.lineWidth=1;
+  for(let x=0;x<GW;x+=30){GX.beginPath();GX.moveTo(x,0);GX.lineTo(x,GH);GX.stroke()}
+  for(let y=0;y<GH;y+=30){GX.beginPath();GX.moveTo(0,y);GX.lineTo(GW,y);GX.stroke()}
+  BR.bricks.forEach(bk=>{if(!bk.alive)return;GX.fillStyle=bk.color;GX.shadowBlur=5;GX.shadowColor=bk.color;GX.fillRect(bk.x,bk.y,bk.w,bk.h);GX.shadowBlur=0});
+  const p=BR.paddle;GX.fillStyle='#00fff7';GX.shadowBlur=10;GX.shadowColor='#00fff7';GX.fillRect(p.x,p.y,p.w,p.h);GX.shadowBlur=0;
+  const b=BR.ball;GX.beginPath();GX.arc(b.x,b.y,b.r,0,Math.PI*2);GX.fillStyle='#fff';GX.shadowBlur=10;GX.shadowColor='#00fff7';GX.fill();GX.shadowBlur=0;
+  if(!BR.launched){GX.fillStyle='#00fff760';GX.font='11px Share Tech Mono';GX.textAlign='center';GX.textBaseline='middle';GX.fillText('SPACE / TAP TO LAUNCH',GW/2,GH/2)}
+  GX.shadowBlur=0;GX.textBaseline='alphabetic';
+  GX.fillStyle='#00fff7';GX.font='bold 13px Orbitron,monospace';GX.textAlign='left';GX.fillText(`BRICKS: ${BR.bricks.filter(b=>b.alive).length}`,10,22);
+  GX.textAlign='right';GX.fillStyle='#00fff7';GX.fillText('♥'.repeat(BR.lives),GW-10,22);GX.fillStyle='#3a486a';GX.fillText('♥'.repeat(3-BR.lives),GW-10-BR.lives*14,22);
+}
+function brWin(){BR.active=false;cancelAnimationFrame(BR.raf);unlockAch('break_win');gameWin()}
+function brLose(){BR.active=false;cancelAnimationFrame(BR.raf);const msgs=BR.score<10?'the ball hit the floor more times than the bricks. sad.':BR.score<25?'mediocre. just like your MLBB wr.':'decent. almost.';document.getElementById('go-msg').textContent=msgs;document.getElementById('game-over-screen').classList.add('show')}
+// launch ball: space + tap
+document.addEventListener('keydown',e=>{if(e.key===' '&&currentGame==='breakout'&&!BR.launched)BR.launched=true});
+GC.addEventListener('pointerdown',()=>{if(currentGame==='breakout'&&!BR.launched)BR.launched=true});
+// breakout paddle touch - move to touch X
+GC.addEventListener('touchmove',e=>{
+  if(currentGame!=='breakout')return;
+  const rect=GC.getBoundingClientRect();
+  const tx=(e.touches[0].clientX-rect.left)*(GW/rect.width);
+  BR.paddle.x=Math.max(0,Math.min(GW-BR.paddle.w,tx-BR.paddle.w/2));
+  e.preventDefault();
+},{passive:false});
 
 // KEYBOARD
 document.addEventListener('keydown',e=>{
   D.keys[e.key]=true;
+  BR.keys[e.key]=true;
   if(e.key==='ArrowLeft'||e.key==='a'){if(SN.dir.x!==1)SN.nextDir={x:-1,y:0}}
   if(e.key==='ArrowRight'||e.key==='d'){if(SN.dir.x!==-1)SN.nextDir={x:1,y:0}}
   if(e.key==='ArrowUp'||e.key==='w'){if(SN.dir.y!==1)SN.nextDir={x:0,y:-1}}
   if(e.key==='ArrowDown'||e.key==='s'){if(SN.dir.y!==-1)SN.nextDir={x:0,y:1}}
+  if(e.key===' '&&currentGame==='breakout'&&!BR.launched)BR.launched=true;
   if(e.key==='Escape'){closeGame();closeRick();closeCredits();closeQuiz();closeTerm()}
   kseq.push(e.key);if(kseq.length>KONAMI.length)kseq.shift();
   if(JSON.stringify(kseq)===JSON.stringify(KONAMI))toggleKonami();
 });
-document.addEventListener('keyup',e=>D.keys[e.key]=false);
-function dpadPress(d){D.keys[d]=true;if(d==='left'&&SN.dir.x!==1)SN.nextDir={x:-1,y:0};if(d==='right'&&SN.dir.x!==-1)SN.nextDir={x:1,y:0};if(d==='up'&&SN.dir.y!==1)SN.nextDir={x:0,y:-1};if(d==='down'&&SN.dir.y!==-1)SN.nextDir={x:0,y:1}}
-function dpadRelease(d){D.keys[d]=false}
+document.addEventListener('keyup',e=>{D.keys[e.key]=false;BR.keys[e.key]=false});
+function dpadPress(d){D.keys[d]=true;BR.keys[d]=true;if(d==='left'&&SN.dir.x!==1)SN.nextDir={x:-1,y:0};if(d==='right'&&SN.dir.x!==-1)SN.nextDir={x:1,y:0};if(d==='up'&&SN.dir.y!==1)SN.nextDir={x:0,y:-1};if(d==='down'&&SN.dir.y!==-1)SN.nextDir={x:0,y:1}}
+function dpadRelease(d){D.keys[d]=false;BR.keys[d]=false}
 
 // ═══════════════════════════════════════════════
 // RICK — USER-INITIATED CLICK (no popup blocker)
@@ -876,6 +1039,8 @@ function showRick(){
   unlockAch('rick');
   const rs=document.getElementById('rick-screen');rs.classList.add('show');
   document.getElementById('rick-count').style.display='block';
+  document.getElementById('rick-frame').style.display='none';
+  document.getElementById('rick-redirect-msg').style.display='none';
   document.getElementById('rick-prize-btn').style.display='none';
   document.getElementById('rick-close').style.display='none';
   document.getElementById('rick-msg').textContent='Preparing your reward...';
@@ -887,13 +1052,15 @@ function showRick(){
       clearInterval(rickInt);
       document.getElementById('rick-count').style.display='none';
       document.getElementById('rick-msg').textContent='Never gonna give you up 🎵';
-      document.getElementById('rick-prize-btn').style.display='block';
+      window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ','_blank','noopener,noreferrer');
+      document.getElementById('rick-redirect-msg').style.display='block';
+      document.getElementById('rick-prize-btn').style.display='inline-block';
       document.getElementById('rick-close').style.display='block';
       attachClickables();
     }
   },1000);
 }
-function closeRick(){clearInterval(rickInt);document.getElementById('rick-screen').classList.remove('show')}
+function closeRick(){clearInterval(rickInt);const f=document.getElementById('rick-frame');f.src='';f.style.display='none';document.getElementById('rick-screen').classList.remove('show')}
 
 // ═══════════════════════════════════════════════
 // CREDITS + POST-CREDITS QUIZ
@@ -901,13 +1068,35 @@ function closeRick(){clearInterval(rickInt);document.getElementById('rick-screen
 function showCredits(){
   unlockAch('credits');
   const o=document.getElementById('credits-overlay');o.classList.add('show');
-  const sc=document.getElementById('credits-scroll');sc.style.animation='none';void sc.offsetHeight;sc.style.animation='creditsRoll 65s linear forwards';
+  const sc=document.getElementById('credits-scroll');sc.style.animation='none';void sc.offsetHeight;sc.style.animation='creditsRoll 65s linear 4s forwards';
   document.getElementById('credits-skip').style.display='block';
   attachClickables();
   // After credits end, show quiz
   sc.addEventListener('animationend',()=>{closeCredits();setTimeout(()=>startQuiz(),800)},{once:true});
 }
 function closeCredits(){document.getElementById('credits-overlay').classList.remove('show');document.getElementById('credits-skip').style.display='none'}
+
+// ═══════════════════════════════════════════════
+// COLOR PICKER (unlocks when ALL achievements done)
+// ═══════════════════════════════════════════════
+function unlockColorPicker(){
+  toast('🎨','ALL ACHIEVEMENTS DONE! Color Picker Unlocked!','cp_unlock');
+  setTimeout(()=>{document.getElementById('color-picker').classList.add('show');attachClickables()},1500);
+}
+function applyColor(varName,val){
+  document.documentElement.style.setProperty(varName,val);
+  if(varName==='--accent')document.documentElement.style.setProperty('--glow',`0 0 10px ${val},0 0 30px ${val}40`);
+  if(varName==='--danger')document.documentElement.style.setProperty('--glow-red',`0 0 10px ${val},0 0 30px ${val}40`);
+}
+function resetColors(){
+  const def={'--accent':'#00fff7','--danger':'#ff153f','--bg':'#182433','--panel':'#1e2e42','--text':'#c8e6f0','--glow':'0 0 10px #00fff7,0 0 30px #00fff740','--glow-red':'0 0 10px #ff153f,0 0 30px #ff153f40'};
+  Object.entries(def).forEach(([k,v])=>document.documentElement.style.setProperty(k,v));
+  ['cp-accent','cp-danger','cp-bg','cp-panel','cp-text'].forEach(id=>{
+    const el=document.getElementById(id);
+    const vals={'cp-accent':'#00fff7','cp-danger':'#ff153f','cp-bg':'#182433','cp-panel':'#1e2e42','cp-text':'#c8e6f0'};
+    if(el)el.value=vals[id];
+  });
+}
 
 // ═══════════════════════════════════════════════
 // MEME QUIZ
@@ -983,6 +1172,7 @@ function showQuizResult(){
   document.getElementById('quiz-score-msg').textContent=msg?msg[2]:'not bad.';
   document.getElementById('quiz-result').style.display='flex';
   unlockAch('quiz');
+  if(quizScore===MEME_QS.length)unlockAch('quiz_perf');
   attachClickables();
 }
 function closeQuiz(){document.getElementById('quiz-overlay').classList.remove('show')}
@@ -1001,8 +1191,8 @@ const TERM_CMDS={
   about:()=>`<span style="color:#e8b85b">怠竜 Tearyū</span>\nBSc IT · Biratnagar, Nepal 🇳🇵\nNepali · Filipino/Spanish/Chinese\nBuilds things way more complex than needed.\nAt 3AM. Always. Zero frameworks. One file.`,
   projects:()=>{fxProjects();return`<span style="color:var(--accent)">// Scrolling to projects and highlighting them... //</span>\n<a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" style="color:var(--accent)">NavalStrike ↗</a>\n<a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" style="color:var(--accent)">TicTacToe ↗</a>\n<a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" style="color:var(--accent)">Deadshot Crosshair ↗</a>`},
   ggmu:()=>{fxGgmu();return`<span style="color:#ff0000;font-size:1.1em">⚽ GLORY GLORY MAN UNITED ⚽</span>\nFuck oil money. We are Manchester. The real one.\nRooney. Scholes. Giggs. Fergie. CANTONA.\nGGMU forever. No matter what. 🔴`},
-  goat:()=>{fxGoat();return`<span style="color:#e8b85b">🐐 THE GOAT DEBATE 🐐</span>\nFootball: Messi. GOAT. Not up for debate.\nBut Ronaldo defied nature. CR7 forever.\n(Two GOATs different era. Both valid.)\nBasketball: MJ. 6-0. Sealed.\nBut LeBron? Generational. Respect.`},
-  mlbb:()=>`<span style="color:var(--accent)">// MOBILE LEGENDS STATS //</span>\nMain: 怠竜Taeryū · 1680765500 (18127)\nMythic ⭐52 peak · Roam Main 🛡️\n1,369 matches\n\nRetired: 龍神 RyŪjin · 1992586716 (19366)\n<span style="color:#e8b85b">Alucard WR: 95.2% 🩸 · 49 matches · Epic</span>\nAngry at MLBB daily. Will still play tomorrow.`,
+  goat:()=>{fxGoat();return`<span style="color:#e8b85b">🐐 THE GOAT DEBATE 🐐</span>\nFootball: Messi. THE GOAT. No argument.\nRonaldo: GOAT of Scoring and Longevity.\nCR7 defied nature itself. Different legend.\nBasketball: MJ. 6-0. Sealed.\nBut LeBron? Generational. Respect.`},
+  mlbb:()=>{fxMlbb();return`<span style="color:var(--accent)">// MOBILE LEGENDS STATS //</span>\nMain: 怠竜Taeryū · 1680765500 (18127)\nMythic ⭐52 peak · Roam Main 🛡️ · 1,369 matches\n\nRetired: 龍神 RyŪjin · 1992586716 (19366)\n<span style="color:#e8b85b">Alucard WR: 95.2% 🩸 · 49 matches · Epic rank</span>\nStill angry at MLBB. Will play again tonight.`},
   sleep:()=>{fxSleep();return`<span style="color:var(--dim)">initiating sleep protocol...</span>\nsleep: false\n# 3AM. Code not done.\n# Dragon does not sleep.\n# (Dragon is very tired though)\n<span style="color:var(--dim)">...sleep rejected.</span>`},
   dragon:()=>toggleDragonTheme(),
   konami:()=>{fxKonami();return`<span style="color:#00ff41">MATRIX ${matrixActive?'ACTIVATED ↑↑↓↓←→←→BA':'DEACTIVATED'}</span>`},
