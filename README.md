@@ -88,7 +88,7 @@ build_time: 3AM – 4AM (prime hours, honestly)
 ### 🔄 [tearyu-datamorph](https://github.com/The-Lazy-Dragon/tearyu-datamorph) `v1.1.0` — **FEATURED**
 > *Data format converter with 9 formats, 91 passing tests, and three interfaces: a desktop GUI, a CLI, and a live web converter. CSV, JSON, XML, YAML, TOML, TSV, NDJSON, Excel, HTML tables — all bidirectional. Python, PyInstaller, tkinter, no BS.*
 
-[![Stars](https://img.shields.io/github/stars/The-Lazy-Dragon/tearyu-datamorph?style=flat-square&color=00fff7&labelColor=182433)](https://github.com/The-Lazy-Dragon/tearyu-datamorph)
+[![Stars](https://img.shields.io/github/stars/The-Lazy-Dragon/tearyu-datamorph?style=flat-square&color=00fff7&labelColor=182433)](https://github.com/The-Lazy-Dragon/datamorph)
 [![Live](https://img.shields.io/badge/🌐%20Live%20Converter-00fff7?style=flat-square&labelColor=182433)](https://the-lazy-dragon.github.io/datamorph/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-0a1628?style=flat-square&logo=python&logoColor=00f0ff)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/Tests-91%20Passing-0a1628?style=flat-square&logo=pytest&logoColor=00f0ff)]()
