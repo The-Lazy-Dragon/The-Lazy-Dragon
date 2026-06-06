@@ -12,7 +12,7 @@
 
 # 怠竜 · TEARYŪ
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=18&pause=1000&color=00FFF7&center=true&vCenter=true&width=600&lines=BSc+IT+Student+%7C+IIC+Itahari;Builds+things+at+3AM+%7C+No+frameworks+needed;One+.html+file+is+all+I+need.;GGMU+%E2%9A%BD+%7C+Chi+Town+%F0%9F%90%82+%7C+King+James+%F0%9F%91%91)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=18&pause=1000&color=00FFF7&center=true&vCenter=true&width=600&lines=BSc+IT+Student+%7C+IIC+Itahari;tearyu-datamorph+%7C+9+Formats+%7C+91+Tests;Builds+things+at+3AM+%7C+No+frameworks+needed;One+.html+file+is+all+I+need.;GGMU+%E2%9A%BD+%7C+Chi+Town+%F0%9F%90%82+%7C+King+James+%F0%9F%91%91)](https://git.io/typing-svg)
 
 [![GitHub followers](https://img.shields.io/github/followers/The-Lazy-Dragon?style=flat-square&color=00fff7&labelColor=182433&label=Followers)](https://github.com/The-Lazy-Dragon?tab=followers)
 [![GitHub stars](https://img.shields.io/github/stars/The-Lazy-Dragon?style=flat-square&color=ff153f&labelColor=182433&label=Total%20Stars)](https://github.com/The-Lazy-Dragon)
@@ -84,6 +84,17 @@ build_time: 3AM – 4AM (prime hours, honestly)
 ---
 
 ## 🐉 Projects
+
+### 🔄 [tearyu-datamorph](https://github.com/The-Lazy-Dragon/tearyu-datamorph) `v1.1.0` — **FEATURED**
+> *Data format converter with 9 formats, 91 passing tests, and three interfaces: a desktop GUI, a CLI, and a live web converter. CSV, JSON, XML, YAML, TOML, TSV, NDJSON, Excel, HTML tables — all bidirectional. Python, PyInstaller, tkinter, no BS.*
+
+[![Stars](https://img.shields.io/github/stars/The-Lazy-Dragon/tearyu-datamorph?style=flat-square&color=00fff7&labelColor=182433)](https://github.com/The-Lazy-Dragon/tearyu-datamorph)
+[![Live](https://img.shields.io/badge/🌐%20Live%20Converter-00fff7?style=flat-square&labelColor=182433)](https://the-lazy-dragon.github.io/datamorph/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-0a1628?style=flat-square&logo=python&logoColor=00f0ff)](https://www.python.org/)
+[![Tests](https://img.shields.io/badge/Tests-91%20Passing-0a1628?style=flat-square&logo=pytest&logoColor=00f0ff)]()
+[![Formats](https://img.shields.io/badge/Formats-9-3a486a?style=flat-square)](#)
+
+---
 
 ### ⚓ [NavalStrike](https://github.com/The-Lazy-Dragon/NavalStrike) `v1.0.0`
 > *It's Battleship. But neon. But with 25 ship classes, 35 achievements, a Konami code, 5 procedural audio themes, and hard AI that actually hurts. One `.html` file.*

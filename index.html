@@ -90,7 +90,11 @@ section{padding:6rem 3rem;max-width:1100px;margin:0 auto}
 .hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--dim);font-size:.65rem;letter-spacing:3px;opacity:0;animation:fadeUp .6s 1.5s forwards}
 .scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--accent),transparent);animation:scrollPulse 2s infinite}
 
-/* ── ORB ── */
+/* ── FEATURED PROJECT CARD ── */
+.featured-card{border-color:var(--accent)!important;background:linear-gradient(135deg,var(--panel) 0%,rgba(0,255,247,.04) 100%);position:relative;overflow:hidden}
+.featured-card::before{content:'★ FEATURED';position:absolute;top:.6rem;right:.8rem;font-size:.55rem;letter-spacing:3px;color:var(--accent);opacity:.7}
+.featured-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+
 #secret-orb{position:fixed;bottom:2rem;right:2rem;z-index:500;width:52px;height:52px;border-radius:50%;border:1px solid var(--accent);background:transparent;cursor:none;transition:all .3s;display:flex;align-items:center;justify-content:center;animation:orbPulse 3s infinite}
 #secret-orb:hover{background:#00fff720;box-shadow:var(--glow);transform:scale(1.15)}
 .orb-symbol{font-size:20px;color:var(--accent);pointer-events:none}
@@ -471,6 +475,15 @@ footer a:hover{text-decoration:underline}
 <section id="projects">
   <div class="section-header reveal"><span class="section-num">02 //</span><h2 class="section-title">Projects</h2><div class="section-line"></div></div>
   <div class="projects-grid">
+    <div class="project-card featured-card reveal" id="card-datamorph">
+      <div class="project-icon">🔄</div><div class="project-name">tearyu-datamorph</div><div class="project-version">v1.1.0 · Featured</div>
+      <div class="project-desc">Data format converter with 9 bidirectional formats, 91 passing tests, and three interfaces: a desktop GUI, a CLI, and a live web converter. CSV, JSON, XML, YAML, TOML, TSV, NDJSON, Excel, HTML — all handled. Python + tkinter + PyInstaller.</div>
+      <div class="project-badges"><span class="badge cyan">Python</span><span class="badge">9 Formats</span><span class="badge red">91 Tests</span><span class="badge">Desktop + CLI + Web</span></div>
+      <div class="project-links">
+        <a href="https://the-lazy-dragon.github.io/datamorph/" target="_blank" rel="noopener" class="proj-link clickable">🌐 Live Converter</a>
+        <a href="https://github.com/The-Lazy-Dragon/tearyu-datamorph" target="_blank" rel="noopener" class="proj-link clickable">GitHub ↗</a>
+      </div>
+    </div>
     <div class="project-card reveal" id="card-naval">
       <div class="project-icon">⚓</div><div class="project-name">NavalStrike</div><div class="project-version">v1.0.0</div>
       <div class="project-desc">Battleship. But neon. 25 ship classes, 35 achievements, Konami code, 5 procedural audio themes, hard AI. One <code>.html</code> file.</div>
@@ -673,7 +686,7 @@ function fxSleep(){
 }
 function fxProjects(){
   const sec=document.getElementById('projects');sec.scrollIntoView({behavior:'smooth'});
-  setTimeout(()=>{['card-naval','card-ttt','card-cross'].forEach((id,i)=>{setTimeout(()=>{const c=document.getElementById(id);c.classList.add('glow-highlight');setTimeout(()=>c.classList.remove('glow-highlight'),600)},i*200)})},600);
+  setTimeout(()=>{['card-datamorph','card-naval','card-ttt','card-cross'].forEach((id,i)=>{setTimeout(()=>{const c=document.getElementById(id);c.classList.add('glow-highlight');setTimeout(()=>c.classList.remove('glow-highlight'),600)},i*200)})},600);
 }
 function fxKonami(){toggleKonami();burstAll(['#00ff41','#00fff7'])}
 function fxMlbb(){
@@ -704,7 +717,7 @@ function proceedToWin(){
 // ═══════════════════════════════════════════════
 // TYPEWRITER
 // ═══════════════════════════════════════════════
-const lines=['BSc IT Student @ IIC, Itahari','Building things way too complex for no reason','No frameworks. No installs. One file.','Roam main. Former Alucard. 95.2% WR.','GGMU. Fuck oil money.','MJ is GOAT. LeBron is the real deal.','Built at 3AM because nothing else to do.','Avid fan and hater of Football Manager.'];
+const lines=['BSc IT Student @ IIC, Itahari','tearyu-datamorph: 9 formats. 91 tests. 3 interfaces.','Building things way too complex for no reason','No frameworks. No installs. One file.','Roam main. Former Alucard. 95.2% WR.','GGMU. Fuck oil money.','MJ is GOAT. LeBron is the real deal.','Built at 3AM because nothing else to do.','Avid fan and hater of Football Manager.'];
 let li=0,ci=0,del=false;const tw=document.getElementById('typewriter');
 function type(){const cur=lines[li];if(!del){tw.textContent=cur.slice(0,++ci);if(ci===cur.length){del=true;setTimeout(type,2200);return}setTimeout(type,55)}else{tw.textContent=cur.slice(0,--ci);if(ci===0){del=false;li=(li+1)%lines.length;setTimeout(type,400);return}setTimeout(type,28)}}
 setTimeout(type,2000);
@@ -1189,7 +1202,7 @@ const TERM_CMDS={
     return null;
   },
   about:()=>`<span style="color:#e8b85b">怠竜 Tearyū</span>\nBSc IT · Biratnagar, Nepal 🇳🇵\nNepali · Filipino/Spanish/Chinese\nBuilds things way more complex than needed.\nAt 3AM. Always. Zero frameworks. One file.`,
-  projects:()=>{fxProjects();return`<span style="color:var(--accent)">// Scrolling to projects and highlighting them... //</span>\n<a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" style="color:var(--accent)">NavalStrike ↗</a>\n<a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" style="color:var(--accent)">TicTacToe ↗</a>\n<a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" style="color:var(--accent)">Deadshot Crosshair ↗</a>`},
+  projects:()=>{fxProjects();return`<span style="color:var(--accent)">// Scrolling to projects and highlighting them... //</span>\n<a href="https://the-lazy-dragon.github.io/datamorph/" target="_blank" style="color:var(--accent)">tearyu-datamorph (Live Converter) ↗</a>\n<a href="https://github.com/The-Lazy-Dragon/tearyu-datamorph" target="_blank" style="color:var(--accent)">tearyu-datamorph (GitHub) ↗</a>\n<a href="https://the-lazy-dragon.github.io/NavalStrike/" target="_blank" style="color:var(--accent)">NavalStrike ↗</a>\n<a href="https://the-lazy-dragon.github.io/lazy-dragons-tictactoe/tictactoe.html" target="_blank" style="color:var(--accent)">TicTacToe ↗</a>\n<a href="https://github.com/The-Lazy-Dragon/Tearyu-Deadshot-Crosshair" target="_blank" style="color:var(--accent)">Deadshot Crosshair ↗</a>`},
   ggmu:()=>{fxGgmu();return`<span style="color:#ff0000;font-size:1.1em">⚽ GLORY GLORY MAN UNITED ⚽</span>\nFuck oil money. We are Manchester. The real one.\nRooney. Scholes. Giggs. Fergie. CANTONA.\nGGMU forever. No matter what. 🔴`},
   goat:()=>{fxGoat();return`<span style="color:#e8b85b">🐐 THE GOAT DEBATE 🐐</span>\nFootball: Messi. THE GOAT. No argument.\nRonaldo: GOAT of Scoring and Longevity.\nCR7 defied nature itself. Different legend.\nBasketball: MJ. 6-0. Sealed.\nBut LeBron? Generational. Respect.`},
   mlbb:()=>{fxMlbb();return`<span style="color:var(--accent)">// MOBILE LEGENDS STATS //</span>\nMain: 怠竜Taeryū · 1680765500 (18127)\nMythic ⭐52 peak · Roam Main 🛡️ · 1,369 matches\n\nRetired: 龍神 RyŪjin · 1992586716 (19366)\n<span style="color:#e8b85b">Alucard WR: 95.2% 🩸 · 49 matches · Epic rank</span>\nStill angry at MLBB. Will play again tonight.`},
